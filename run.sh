@@ -1,6 +1,7 @@
 #!/bin/bash
 
-export PORT=4000
+export TRACK_DIRECTORY=./tracks
+export PORT=4005
 export DEBUG=True
 export DB_FILENAME=database.db
 export JWT_SECRET=secret

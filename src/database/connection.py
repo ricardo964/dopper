@@ -10,7 +10,8 @@ class Database:
             _config = Config()
             try:
                 Database.connection = sqlite3.connect(
-                    _config.db_filename
+                    _config.db_filename,
+                    autocommit=True
                 )
             except:
                 raise ValueError("ERROR TO CREATE OR READ DATABASE")

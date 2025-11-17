@@ -5,7 +5,6 @@ from model import ArtistMigration, AlbumMigration
 if __name__ == "__main__":
     server_config = Config()
     
-    UserMigration().drop()
     if not UserMigration().create():
         print("Error to create table users")
     

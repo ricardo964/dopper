@@ -4,8 +4,8 @@ from database.connection import Database
 from uuid import UUID, uuid4
 
 class Album(AbstractModel):
-    def __init__(self, name: str, release_date: str, number_of_songs: int, id: UUID = uuid4()) -> None:
-        self.id = id
+    def __init__(self, name: str, release_date: str, number_of_songs: int) -> None:
+        self.id = uuid4
         self.name = name
     
     def save(self) -> bool:
@@ -26,9 +26,9 @@ class AlbumMigration(AbstractModelMigration):
     def create(self) -> bool:
         cursor = Database.get_connection().cursor()
         table_define = """
-        CREATE TABLE IF NOT EXISTS albums (
-            album_id CHARACTER(16) NOT NUL PRIMARY KEY,
-            album_name VARCHAR(50) NOT NULL,
+        CREATE TABLE albums (
+            album_id CHAR(16) NOT NULL PRIMARY KEY,
+            album_name VARCHAR(50) NOT NULL
         );
         """
         try:
@@ -43,7 +43,7 @@ class AlbumMigration(AbstractModelMigration):
     
     def drop(self) -> bool:
         cursor = Database.get_connection().cursor()
-        query_define = "DROP TABLE IF NOT EXISTS albums;"
+        query_define = "DROP TABLE albums;"
         try:
             cursor.execute(query_define)
         except Exception as e:

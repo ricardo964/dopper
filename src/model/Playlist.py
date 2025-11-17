@@ -3,26 +3,25 @@ from model.AbstractModelMigration import AbstractModelMigration
 from database.connection import Database
 from uuid import UUID, uuid4
 
-class User(AbstractModel):
-    def __init__(self, username: str, email: str, password: str) -> None:
+class Playlist(AbstractModel):
+    def __init__(self, user_id: UUID, name: str) -> None:
         self.id = uuid4()
-        self.username = username
-        self.email = email
-        self.password = password
-    
+        self.user_id = user_id
+        self.name = name
+            
     def save(self) -> bool:
         cursor = Database.get_connection().cursor()
         insert_query = """
-            INSERT INTO users (user_id, user_username, user_email, user_password)
-            VALUES (?, ?, ?, ?);
+            INSERT INTO playlists (playlist_id, playlist_user_id, playlist_name)
+            VALUES (%s, %s, %s);
         """
         try:
             cursor.execute(
                 insert_query,
-                (self.id.__str__(), self.username, self.email, self.password)
+                (self.id.__str__(), self.user_id.__str__(), self.name)
             )
         except Exception as e:
-            print(f"Error saving user: {e}")
+            print(f"Error saving playlist: {e}")
             return False
         finally:
             cursor.close()
@@ -34,7 +33,7 @@ class User(AbstractModel):
     @classmethod
     def find_by_id(_class, id):
         cursor = Database.get_connection().cursor()
-        query = "SELECT * FROM users WHERE user_id = ?"
+        query = "SELECT * FROM playlists WHERE playlist_id = %s"
         try:
             cursor.execute(query, (id,))
             result = cursor.fetchone()
@@ -49,8 +48,8 @@ class User(AbstractModel):
     @classmethod
     def find_by_attributes(_class, **kwargs):
         cursor = Database.get_connection().cursor()
-        query = "SELECT * FROM users WHERE "
-        query += " AND ".join([f"{key} = ?" for key in kwargs.keys()])
+        query = "SELECT * FROM playlists WHERE "
+        query += " AND ".join([f"{key} = %s" for key in kwargs.keys()])
         try:
             cursor.execute(query, tuple(kwargs.values()))
             result = cursor.fetchone()
@@ -67,11 +66,11 @@ class UserMigration(AbstractModelMigration):
     def create(self) -> bool:
         cursor = Database.get_connection().cursor()
         table_define = """
-        CREATE TABLE users (
-            user_id CHAR(16) NOT NULL PRIMARY KEY,
-            user_username VARCHAR(50) NOT NULL,
-            user_email VARCHAR(50) NOT NULL UNIQUE,
-            user_password VARCHAR(100) NOT NULL
+        CREATE TABLE Playlists (
+            playlist_id CHAR(16) NOT NULL PRIMARY KEY,
+            playlist_user_id CHAR(16) NOT NULL,
+            playlist_name VARCHAR(100) NOT NULL,
+            FOREIGN KEY (playlist_user_id) REFERENCES users(user_id)
         );
         """
         try:
@@ -85,7 +84,7 @@ class UserMigration(AbstractModelMigration):
     
     def drop(self) -> bool:
         cursor = Database.get_connection().cursor()
-        query_define = "DROP TABLE users;"
+        query_define = "DROP TABLE playlists;"
         try:
             cursor.execute(query_define)
         except Exception as e:

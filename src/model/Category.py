@@ -4,8 +4,8 @@ from database.connection import Database
 from uuid import UUID, uuid4
 
 class Category(AbstractModel):
-    def __init__(self, name: str, id: UUID = uuid4()) -> None:
-        self.id = id
+    def __init__(self, name: str) -> None:
+        self.id = uuid4()
         self.name = name
     
     def save(self) -> bool:
@@ -26,9 +26,9 @@ class CategoryMigration(AbstractModelMigration):
     def create(self) -> bool:
         cursor = Database.get_connection().cursor()
         table_define = """
-        CREATE TABLE IF NOT EXISTS categories (
-            category_id CHARACTER(16) NOT NULL PRIMARY KEY,
-            category_name VARCHAR(50) NOT NULL,
+        CREATE TABLE categories (
+            category_id CHAR(16) NOT NULL PRIMARY KEY,
+            category_name VARCHAR(50) NOT NULL
         );
         """
         try:
@@ -43,7 +43,7 @@ class CategoryMigration(AbstractModelMigration):
     
     def drop(self) -> bool:
         cursor = Database.get_connection().cursor()
-        query_define = "DROP TABLE IF NOT EXISTS categories;"
+        query_define = "DROP TABLE categories;"
         try:
             cursor.execute(query_define)
         except Exception as e:
