@@ -1,3 +1,6 @@
+from io import BytesIO
+from mutagen.mp3 import MP3
+
 class Utils:
     @staticmethod
     def validate_user_data(data):
@@ -22,3 +25,10 @@ class Utils:
             if field not in data:
                 return False
         return True
+    
+    @staticmethod
+    def get_duration_in_second(mp3_bytes: bytes):
+        audio = MP3(BytesIO(mp3_bytes))
+        return audio.info.length
+    
+    

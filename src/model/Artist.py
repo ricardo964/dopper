@@ -4,24 +4,82 @@ from database.connection import Database
 from uuid import UUID, uuid4
 
 class Artist(AbstractModel):
-    def __init__(self, name: str) -> None:
-        self.id = uuid4()
+    def __init__(self, name: str, gen_id=True) -> None:
+        if gen_id:
+            self.id = uuid4()
+        else:
+            self.id = None
         self.name = name
     
     def save(self) -> bool:
+        cursor = Database.get_connection().cursor()
+        insert_query = """
+            INSERT INTO artists (artist_id, artist_name)
+            VALUES (?, ?);
+        """
+        try:
+            cursor.execute(
+                insert_query,
+                (self.id.__str__(), self.name)
+            )
+        except Exception as e:
+            print(f"Error saving artist: {e}")
+            return False
+        finally:
+            cursor.close()
         return True
     
     def update(self, **kwargs):
         return True
     
     @classmethod
-    def find_by_id(_class, id):
-        return None
+    def find_all(_class, limit: int = 25, offset: int = 0):
+        cursor  = Database.get_connection().cursor()
+        query_define = f"""
+            SELECT * FROM artists
+            LIMIT {limit} OFFSET {offset};
+        """
+        try:
+            cursor.execute(query_define)
+            rows = cursor.fetchall()
+            
+            artists = list()
+            for id, name in rows:
+                _cls = _class(
+                    name,
+                    gen_id=False
+                )
+                
+                _cls.id = UUID(id)
+                artists.append(_cls)
+                
+            return artists
+        except Exception as e:
+            print(f"Error getting artist: {e}")
+        finally:
+            cursor.close()
+            
+        return []
     
     @classmethod
-    def find_by_attributes(_class, id):
+    def find_by_id(_class, id):
+        cursor = Database.get_connection().cursor()
+        query = "SELECT * FROM artist WHERE artist_id = ?"
+        try:
+            cursor.execute(query, (id,))
+            result = cursor.fetchone()
+            
+            if result is not None:
+                _id, _name = result
+                _cls = _class(_name, gen_id=False)
+                _cls.id = UUID(_id)
+
+                return _cls     
+        except Exception as e:
+            print(f"Error finding user by id: {e}")
+        finally:
+            cursor.close()
         return None
-    
 
 class ArtistMigration(AbstractModelMigration):
     def create(self) -> bool:

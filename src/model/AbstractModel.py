@@ -13,11 +13,6 @@ class AbstractModel(ABC):
     @abstractmethod
     def find_by_id(_class, id: str) -> 'AbstractModel':
         pass
-    
-    @classmethod
-    @abstractmethod
-    def find_by_attributes(_class, **kwargs) -> list['AbstractModel']:
-        pass
 
     # @classmethod
     # @abstractmethod

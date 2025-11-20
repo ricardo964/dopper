@@ -18,9 +18,6 @@ class Album(AbstractModel):
     def find_by_id(_class, id):
         return None
     
-    @classmethod
-    def find_by_attributes(_class, id):
-        return None
     
 class AlbumMigration(AbstractModelMigration):
     def create(self) -> bool:

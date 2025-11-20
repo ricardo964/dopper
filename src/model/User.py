@@ -4,8 +4,12 @@ from database.connection import Database
 from uuid import UUID, uuid4
 
 class User(AbstractModel):
-    def __init__(self, username: str, email: str, password: str) -> None:
-        self.id = uuid4()
+    def __init__(self, username: str, email: str, password: str, gen_id = True) -> None:
+        if gen_id:
+            self.id = uuid4()
+        else:
+            self.id = None
+        
         self.username = username
         self.email = email
         self.password = password
@@ -39,7 +43,16 @@ class User(AbstractModel):
             cursor.execute(query, (id,))
             result = cursor.fetchone()
             if result:
-                return _class(*result)
+                _id, _username, _email, _password = result
+                _cls = _class(
+                    _username,
+                    _email,
+                    _password,
+                    gen_id=False
+                )
+                
+                _cls.id = UUID(_id)
+                return _cls
         except Exception as e:
             print(f"Error finding user by id: {e}")
         finally:
@@ -47,17 +60,25 @@ class User(AbstractModel):
         return None
     
     @classmethod
-    def find_by_attributes(_class, **kwargs):
+    def find_by_email(_class, email):
         cursor = Database.get_connection().cursor()
-        query = "SELECT * FROM users WHERE "
-        query += " AND ".join([f"{key} = ?" for key in kwargs.keys()])
+        query = "SELECT * FROM users WHERE user_email = ?"
         try:
-            cursor.execute(query, tuple(kwargs.values()))
+            cursor.execute(query, (email,))
             result = cursor.fetchone()
             if result:
-                return _class(*result)
+                _id, _username, _email, _password = result
+                _cls = _class(
+                    _username,
+                    _email,
+                    _password,
+                    gen_id=False
+                )
+                
+                _cls.id = UUID(_id)
+                return _cls
         except Exception as e:
-            print(f"Error finding user: {e}")
+            print(f"Error finding user by email: {e}")
         finally:
             cursor.close()
         return None

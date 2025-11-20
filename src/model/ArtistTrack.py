@@ -3,51 +3,42 @@ from model.AbstractModelMigration import AbstractModelMigration
 from database.connection import Database
 from uuid import UUID, uuid4
 
-class File(AbstractModel):
-    def __init__(self, size: int, data: bytes, gen_id = True) -> None:
-        if gen_id:
-            self.id = uuid4()
-        else:
-            self.id = None
-        self.size = size
-        self.data = data
-
+class ArtistTrack(AbstractModel):
+    def __init__(self, artist_id: UUID, track_id: UUID) -> None:
+        self.artist_id = artist_id
+        self.track_id = track_id
+    
     def save(self) -> bool:
         cursor = Database.get_connection().cursor()
         insert_query = """
-            INSERT INTO files (file_id, file_size, file_data)
-            VALUES (?, ?, ?);
+            INSERT INTO artists_tracks (at_artist_id, at_track_id)
+            VALUES (?, ?);
         """
         try:
             cursor.execute(
                 insert_query,
-                (self.id.__str__(), self.size, self.data)
+                (self.artist_id.__str__(), self.track_id.__str__())
             )
         except Exception as e:
-            print(f"Error saving user: {e}")
+            print(f"Error saving artist-track: {e}")
             return False
         finally:
             cursor.close()
-        
         return True
     
-    def update(self, **kwargs):
-        return True
-
     @classmethod
-    def find_by_id(_class, id):
+    def find_by_id(_class, artist_id, track_id):
         cursor = Database.get_connection().cursor()
         query_define = f"""
-        SELECT * FROM files WHERE file_id = ?;
+            SELECT * FROM artists_tracks WHERE at_track_id = ? AND at_artist_id = ?;
         """
         try:
-            cursor.execute(query_define, (id,))
+            cursor.execute(query_define, (track_id, artist_id))
             result = cursor.fetchone()
-
+            
             if result is not None:
-                _id, _size, _data = result
-                _cls = _class(_size, _data, gen_id=False)
-                _cls.id = UUID(_id)
+                _artist_id, _track_id = result
+                _cls = _class(UUID(_artist_id), UUID(_track_id))
 
                 return _cls
         except Exception as e:
@@ -56,15 +47,20 @@ class File(AbstractModel):
             cursor.close()
         
         return None
-
-class FileMigration(AbstractModelMigration):
+    
+    def update(self, **kwargs):
+        pass
+    
+class ArtistTrackMigration(AbstractModelMigration):
     def create(self) -> bool:
         cursor = Database.get_connection().cursor()
         table_define = """
-        CREATE TABLE files (
-            file_id CHAR(16) NOT NULL PRIMARY KEY,
-            file_size INT NOT NULL,
-            file_data BLOB NOT NULL
+        CREATE TABLE artists_tracks (
+            at_artist_id CHAR(16) NOT NULL,
+            at_track_id VARCHAR(50) NOT NULL,
+            FOREIGN KEY (at_artist_id) REFERENCES artists(artist_id),
+            FOREIGN KEY (at_track_id) REFERENCES tracks(track_id),
+            PRIMARY KEY (at_artist_id, at_track_id)
         );
         """
         try:
@@ -79,7 +75,7 @@ class FileMigration(AbstractModelMigration):
     
     def drop(self) -> bool:
         cursor = Database.get_connection().cursor()
-        query_define = "DROP TABLE files;"
+        query_define = "DROP TABLE artists_tracks;"
         try:
             cursor.execute(query_define)
         except Exception as e:

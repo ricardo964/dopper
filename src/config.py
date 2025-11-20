@@ -4,7 +4,6 @@ import os
 class Config:
     port: int
     debug_mode: bool
-    track_directory: str
     db_filename: str
     jwt_secret: str
     
@@ -25,12 +24,7 @@ class Config:
         if not os.getenv("JWT_SECRET"):
             raise ValueError("JWT_SECRET NOT PROVIDER")
         self.jwt_secret = os.getenv("JWT_SECRET")
-        
-        if not os.getenv("TRACK_DIRECTORY"):
-            raise ValueError("TRACK_DIRECTORY NOT PROVIDER")
-        self.track_directory = os.getenv("TRACK_DIRECTORY")
 
-        # export TRACK_DIRECTORY=./tracks
         # export PORT=4000
         # export DEBUG=True
         # export DB_FILENAME=FILENAME

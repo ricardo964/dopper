@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from model.User import User
+from model.Playlist import Playlist
 from utils import Utils
 from service.jsonWebToken import JsonWebToken
 from config import Config
@@ -18,9 +19,8 @@ def signup():
             }), 400
         
         # unefficient
-        old_user = User.find_by_attributes(
-            user_email=new_credentials["email"]
-        )
+        old_user = User.find_by_email(new_credentials["email"])
+        
         if old_user is not None:
             return jsonify({
                 "msg": "the user email exists"
@@ -60,8 +60,8 @@ def signin():
                 "msg": "invalid signin data"
             }), 400
         
-        user = User.find_by_attributes(email=credentials["email"])
-        if user is None or not user.check_password(credentials["password"]):
+        user = User.find_by_email(credentials["email"])
+        if user is None or not user.password == credentials["password"]:
             return jsonify({
                 "msg": "invalid email or password"
             }), 401
@@ -102,8 +102,8 @@ def get_user():
             }), 400
         
         return jsonify({
-            "profile_name": data_user.user_profile_name,
-            "email": data_user.user_email
+            "username": data_user.username,
+            "email": data_user.email
         }), 200
     except:
         return jsonify({
