@@ -24,7 +24,7 @@ class File(AbstractModel):
                 (self.id.__str__(), self.size, self.data)
             )
         except Exception as e:
-            print(f"Error saving user: {e}")
+            print(f"Error saving file: {e}")
             return False
         finally:
             cursor.close()

@@ -5,3 +5,6 @@ from model.Artist import Artist, ArtistMigration
 from model.Album import Album, AlbumMigration
 from model.File import File, FileMigration
 from model.Playlist import Playlist, PlaylistMigration
+
+from model.ArtistTrack import ArtistTrack, ArtistTrackMigration
+from model.PlaylistTrack import PlaylistTrack, PlaylistTrackMigration

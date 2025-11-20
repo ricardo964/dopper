@@ -101,7 +101,7 @@ def upload_track():
         audio_buffer = audio_file.read()
         _file = File(len(audio_buffer), audio_buffer)
         track_file_id = _file.id
-        if _file.save() is False:
+        if _file.save() == False:
             return jsonify({
                 "msg": "Error saving audio file"
             }), 500
@@ -119,7 +119,7 @@ def upload_track():
             Utils.get_duration_in_second(audio_buffer),
             track_file_id,
             track_cover_id
-        ).save() == False:
+        ).save() is False:
             return jsonify({
                 "msg": "Error saving track"
             }), 500

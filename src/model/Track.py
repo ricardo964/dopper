@@ -57,8 +57,8 @@ class Track(AbstractModel):
                 artist_id,
                 artist_name
             FROM tracks
-            JOIN artists_tracks on tracks.track_id = artists_tracks.at_track_id
-            JOIN artists on artists.artist_id = artists_tracks.at_artist_id
+            LEFT JOIN artists_tracks on tracks.track_id = artists_tracks.at_track_id
+            LEFT JOIN artists on artists.artist_id = artists_tracks.at_artist_id
             LIMIT ? OFFSET ?;
         """
         try:
@@ -83,7 +83,10 @@ class Track(AbstractModel):
                     index[id] = track
                 else:
                     track = index[id]
-                    
+                
+                if artist_name is None:
+                    continue
+                
                 artist = Artist(artist_name, gen_id=False)
                 artist.id = artist_id
                 track.artists.append(artist)

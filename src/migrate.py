@@ -1,9 +1,13 @@
 from config import Config
 from model import UserMigration, TrackMigration, CategoryMigration
 from model import ArtistMigration, AlbumMigration, PlaylistMigration
+from model import ArtistTrackMigration, PlaylistTrackMigration, FileMigration
 
 if __name__ == "__main__":
     server_config = Config()
+    
+    if not FileMigration().create():
+        print("Error to create table File")
     
     if not UserMigration().create():
         print("Error to create table users")
@@ -22,3 +26,10 @@ if __name__ == "__main__":
         
     if not PlaylistMigration().create():
         print("Error to create table playlist")
+        
+    if not ArtistTrackMigration().create():
+        print("Error to create table playlist")
+        
+    if not PlaylistTrackMigration().create():
+        print("Error to create table playlist")
+    

@@ -32,7 +32,7 @@ class PlaylistTrackMigration(AbstractModelMigration):
         table_define = """
         CREATE TABLE playlists_tracks (
             pt_playlist_id CHAR(16) NOT NULL,
-            pt_track_id VARCHAR(50) NOT NULL,
+            pt_track_id CHAR(16) NOT NULL,
             FOREIGN KEY (pt_playlist_id) REFERENCES playlists(playlist_id),
             FOREIGN KEY (pt_track_id) REFERENCES tracks(track_id),
             PRIMARY KEY (pt_playlist_id, pt_track_id)

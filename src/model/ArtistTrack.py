@@ -57,7 +57,7 @@ class ArtistTrackMigration(AbstractModelMigration):
         table_define = """
         CREATE TABLE artists_tracks (
             at_artist_id CHAR(16) NOT NULL,
-            at_track_id VARCHAR(50) NOT NULL,
+            at_track_id CHAR(16) NOT NULL,
             FOREIGN KEY (at_artist_id) REFERENCES artists(artist_id),
             FOREIGN KEY (at_track_id) REFERENCES tracks(track_id),
             PRIMARY KEY (at_artist_id, at_track_id)
