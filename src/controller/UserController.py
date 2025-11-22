@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from model.User import User
 from model.Playlist import Playlist
+from model.PlaylistTrack import PlaylistTrack
 from utils import Utils
 from service.jsonWebToken import JsonWebToken
 from config import Config
@@ -104,6 +105,180 @@ def get_user():
         return jsonify({
             "username": data_user.username,
             "email": data_user.email
+        }), 200
+    except:
+        return jsonify({
+            "msg": "bad requests"
+        }), 400
+
+#playlists
+@user_controller.route("/playlist", methods=["POST"])
+def create_playlist():
+    token = request.headers.get("AUTHORIZATION", None)
+    if not token:
+        return jsonify({
+            "msg": "token header is empty"
+        }), 401
+    
+    new_playlist = request.get_json()
+    if new_playlist["name"] is None:
+        return jsonify({
+            "msg": "Error must be name"
+        }), 400
+
+    try:
+        decoded_token = jwt.decode(token)
+        user_id = decoded_token.get("id", None)
+        if user_id is None:
+            return jsonify({
+                "msg": "invalid token"
+            }), 401
+        
+        if Playlist(user_id, new_playlist["name"]).save() is False:
+            return jsonify({
+                "msg": "Error saving playlist"
+            }), 500
+
+        return jsonify({
+            "msg": "playlist created"
+        }), 201
+    except:
+        return jsonify({
+            "msg": "bad requests"
+        }), 400
+
+@user_controller.route("/playlist", methods=["GET"])
+def get_all_playlist():
+    token = request.headers.get("AUTHORIZATION", None)
+    if not token:
+        return jsonify({
+            "msg": "token header is empty"
+        }), 401
+    
+    try:
+        decoded_token = jwt.decode(token)
+        user_id = decoded_token.get("id", None)
+        if user_id is None:
+            return jsonify({
+                "msg": "invalid token"
+            }), 401
+        
+        playlists = Playlist.find_all(user_id)
+
+        response = list()
+        for playlist in playlists:
+            response.append({
+                "id": playlist.id,
+                "name": playlist.name
+            })
+
+        return jsonify({
+            "playlists": response
+        }), 200
+    except:
+        return jsonify({
+            "msg": "bad requests"
+        }), 400
+
+@user_controller.route("/playlist/<id>", methods=["GET"])
+def get_playlist(id):
+    token = request.headers.get("AUTHORIZATION", None)
+    if not token:
+        return jsonify({
+            "msg": "token header is empty"
+        }), 401
+
+    try:
+        decoded_token = jwt.decode(token)
+        user_id = decoded_token.get("id", None)
+        if user_id is None:
+            return jsonify({
+                "msg": "invalid token"
+            }), 401
+        
+        playlist = Playlist.find_by_id(id, user_id)
+        return jsonify({
+            "playlist": {
+                "id": playlist.id,
+                "name": playlist.name,
+                "tracks": []
+            } 
+        }), 200
+    except:
+        return jsonify({
+            "msg": "bad requests"
+        }), 400
+
+@user_controller.route("/playlist/track", methods=["POST"])
+def add_track_in_playlist():
+    token = request.headers.get("AUTHORIZATION", None)
+    if not token:
+        return jsonify({
+            "msg": "token header is empty"
+        }), 401
+    
+    new_link = request.get_json()
+    if new_link["track_id"] is None or new_link["playlist_id"]:
+        return jsonify({
+            "msg": "Error must be track_id and playlist_id"
+        }), 400
+    
+    # error user validation
+
+    try:
+        decoded_token = jwt.decode(token)
+        if not decoded_token.get("id", None):
+            return jsonify({
+                "msg": "invalid token"
+            }), 401
+        
+        if PlaylistTrack(
+            new_link["playlist_id"],
+            new_link["track_id"]
+        ).save() is False:
+            return jsonify({
+                "msg": "Error adding track in playlist"
+            }), 500
+        
+        return jsonify({
+            "msg": "add track in playlist"
+        }), 200
+    except:
+        return jsonify({
+            "msg": "bad requests"
+        }), 400
+    
+@user_controller.route("/playlist/track", methods=["DELETE"])
+def remove_track_in_playlist():
+    token = request.headers.get("AUTHORIZATION", None)
+    if not token:
+        return jsonify({
+            "msg": "token header is empty"
+        }), 401
+    
+    old_link = request.get_json()
+    if old_link["track_id"] is None or old_link["playlist_id"]:
+        return jsonify({
+            "msg": "Error must be track_id and playlist_id"
+        }), 400
+
+    try:
+        decoded_token = jwt.decode(token)
+        if not decoded_token.get("id", None):
+            return jsonify({
+                "msg": "invalid token"
+            }), 401
+        
+        if PlaylistTrack(
+            old_link["playlist_id"],
+            old_link["track_id"]
+        ).delete() is False:
+            return jsonify({
+                "msg": "Error deleting track in playlist"
+            }), 500
+        
+        return jsonify({
+            "msg": "add track in playlist"
         }), 200
     except:
         return jsonify({

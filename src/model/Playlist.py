@@ -4,12 +4,12 @@ from database.connection import Database
 from uuid import UUID, uuid4
 
 class Playlist(AbstractModel):
-    def __init__(self, user_id: UUID, name: str, gen_id = True) -> None:
+    def __init__(self, user_id: str, name: str, gen_id = True) -> None:
         if gen_id:
             self.id = uuid4()
         else:
             self.id = None
-        self.user_id = user_id
+        self.user_id = UUID(user_id)
         self.name = name
             
     def save(self) -> bool:
@@ -34,11 +34,37 @@ class Playlist(AbstractModel):
         return True
     
     @classmethod
-    def find_by_id(_class, id):
+    def find_all(_class, user_id):
         cursor = Database.get_connection().cursor()
-        query = "SELECT * FROM playlists WHERE playlist_id = ?"
+        query = "SELECT * FROM playlists WHERE playlist_user_id = ?"
         try:
-            cursor.execute(query, (id,))
+            cursor.execute(query, (user_id,))
+            rows = cursor.fetchall()
+
+            playlists = list()
+            for id, _user_id, name in rows:
+                playlist = _class(
+                    _user_id,
+                    name,
+                    gen_id=False
+                )
+
+                playlist.id = id
+                playlists.append(playlist)
+
+            return playlists
+        except Exception as e:
+            print(f"Errpr finding user by id: {e}")
+        finally:
+            cursor.close()
+        return []
+
+    @classmethod
+    def find_by_id(_class, id, user_id):
+        cursor = Database.get_connection().cursor()
+        query = "SELECT * FROM playlists WHERE playlist_id = ? AND playlist_user_id = ?"
+        try:
+            cursor.execute(query, (id, user_id))
             result = cursor.fetchone()
             
             if result is not None:

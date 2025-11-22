@@ -52,7 +52,7 @@ def get_file():
 
 # track routes
 @music_player_controller.route("/track", methods=["GET"])
-def get_tracks():
+def get_all_tracks():
     page = request.args.get("page", default=0, type=int)
     try:
         tracks = Track.find_all(limit=25, offset=page * 25)
@@ -158,7 +158,7 @@ def create_artist():
         }), 400
         
 @music_player_controller.route("/artist", methods=["GET"])
-def get_artist():
+def get_all_artist():
     page = request.args.get("page", default=0, type=int)
     try:
         artists = Artist.find_all(limit=25, offset=page * 25)
@@ -171,7 +171,7 @@ def get_artist():
             })
     
         return jsonify({
-                "artist": response
+                "artists": response
             }), 201
     except:
         return jsonify({
@@ -180,7 +180,7 @@ def get_artist():
 
 # artist_track
 @music_player_controller.route("/artist_track", methods=["POST"])
-def link_track_artist():
+def add_track_artist():
     new_link = request.get_json()
     
     if new_link["artist_id"] is None and new_link["track_id"] is None:
@@ -189,10 +189,10 @@ def link_track_artist():
         }), 400
     
     try:
-        if ArtistTrack.find_by_id(new_link["artist_id"], new_link["track_id"]) is not None:
-            return jsonify({
-                "msg": "Error exists artist_track"
-            }), 400
+        # if ArtistTrack.find_by_id(new_link["artist_id"], new_link["track_id"]) is not None:
+        #     return jsonify({
+        #         "msg": "Error exists artist_track"
+        #     }), 400
         
         if ArtistTrack(new_link["artist_id"], new_link["track_id"]).save() is False:
             return jsonify({
@@ -207,3 +207,35 @@ def link_track_artist():
         return jsonify({
            "msg": "bad request"
         }), 400
+
+# @music_player_controller.route("/artist_track", methods=["DELETE"])
+# def remove_track_artist():
+#     new_link = request.get_json()
+    
+#     if new_link["artist_id"] is None and new_link["track_id"] is None:
+#         return jsonify({
+#             "msg": "Error must be artist_id and track_id"
+#         }), 400
+    
+#     try:
+#         # if ArtistTrack.find_by_id(
+#         #     new_link["artist_id"],
+#         #     new_link["track_id"]
+#         # ) is not None:
+#         #     return jsonify({
+#         #         "msg": "Error exists artist_track"
+#         #     }), 400
+        
+#         if ArtistTrack(new_link["artist_id"], new_link["track_id"]).save() is False:
+#             return jsonify({
+#                 "msg": "Error saving artist_track"
+#             }), 500
+    
+#         return jsonify({
+#                 "msg": "artist_track created"
+#             }), 201
+#     except Exception as e:
+#         print(e)
+#         return jsonify({
+#            "msg": "bad request"
+#         }), 400

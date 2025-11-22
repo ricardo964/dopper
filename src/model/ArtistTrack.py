@@ -4,9 +4,9 @@ from database.connection import Database
 from uuid import UUID, uuid4
 
 class ArtistTrack(AbstractModel):
-    def __init__(self, artist_id: UUID, track_id: UUID) -> None:
-        self.artist_id = artist_id
-        self.track_id = track_id
+    def __init__(self, artist_id: str, track_id: str) -> None:
+        self.artist_id = UUID(artist_id)
+        self.track_id = UUID(track_id)
     
     def save(self) -> bool:
         cursor = Database.get_connection().cursor()
@@ -48,7 +48,7 @@ class ArtistTrack(AbstractModel):
         
         return None
     
-    def update(self, **kwargs):
+    def update(self, **kwargs) -> bool:
         pass
     
 class ArtistTrackMigration(AbstractModelMigration):

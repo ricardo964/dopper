@@ -4,9 +4,9 @@ from database.connection import Database
 from uuid import UUID, uuid4
 
 class PlaylistTrack(AbstractModel):
-    def __init__(self, playlist_id: UUID, track_id: UUID) -> None:
-        self.playlist_id = playlist_id
-        self.track_id = track_id
+    def __init__(self, playlist_id: str, track_id: str) -> None:
+        self.playlist_id = UUID(playlist_id)
+        self.track_id = UUID(track_id)
     
     def save(self) -> bool:
         cursor = Database.get_connection().cursor()
@@ -20,12 +20,35 @@ class PlaylistTrack(AbstractModel):
                 (self.playlist_id.__str__(), self.track_id.__str__())
             )
         except Exception as e:
-            print(f"Error saving artist-track: {e}")
+            print(f"Error saving playlists_tracks: {e}")
             return False
         finally:
             cursor.close()
         return True
+
+    @classmethod
+    def find_by_id(_class, id):
+        pass
     
+    @classmethod
+    def delete(_class, playlist_id, track_id):
+        cursor = Database.get_connection().cursor()
+        insert_query = """
+            DELETE FROM playlists_tracks
+            WHERE pt_playlist_id = ? AND pt_track_id = ?;
+        """
+        try:
+            cursor.execute(
+                insert_query,
+                (playlist_id, track_id)
+            )
+        except Exception as e:
+            print(f"Error saving playlists_tracks: {e}")
+            return False
+        finally:
+            cursor.close()
+        return True
+
 class PlaylistTrackMigration(AbstractModelMigration):
     def create(self) -> bool:
         cursor = Database.get_connection().cursor()

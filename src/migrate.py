@@ -4,7 +4,6 @@ from model import ArtistMigration, AlbumMigration, PlaylistMigration
 from model import ArtistTrackMigration, PlaylistTrackMigration, FileMigration
 
 if __name__ == "__main__":
-    server_config = Config()
     
     if not FileMigration().create():
         print("Error to create table File")

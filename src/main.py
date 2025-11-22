@@ -12,6 +12,10 @@ if __name__ == "__main__":
     app.register_blueprint(user_controller)
     app.register_blueprint(music_player_controller)
     
+    @app.route("/keep_alive", methods=["GET"])
+    def keep_alive():
+        return "ok", 200
+
     app.run(
         host="0.0.0.0",
         port=server_config.port,
