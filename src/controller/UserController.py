@@ -1,7 +1,5 @@
 from flask import Blueprint, request, jsonify
 from model.User import User
-from model.Playlist import Playlist
-from model.PlaylistTrack import PlaylistTrack
 from utils import Utils
 from service.jsonWebToken import JsonWebToken
 from config import Config
@@ -12,13 +10,15 @@ user_controller = Blueprint("user_controller", __name__, url_prefix='/user')
 
 @user_controller.route("/signup", methods=["POST"])
 def signup():
+    new_credentials = request.get_json()
+    if not Utils.validate_json(
+        new_credentials, ["username", "email", "password"]
+    ):
+        return jsonify({
+            "msg": "invalid user data"
+        }), 400
+    
     try:
-        new_credentials = request.get_json()
-        if not Utils.validate_user_data(new_credentials):
-            return jsonify({
-                "msg": "invalid user data"
-            }), 400
-        
         # unefficient
         old_user = User.find_by_email(new_credentials["email"])
         
@@ -33,7 +33,7 @@ def signup():
             new_credentials["password"]
         )
         
-        if not new_user.save():
+        if new_user.save() is False:
             return jsonify({
                 "msg": "Error to create user"
             }), 500
@@ -54,15 +54,22 @@ def signup():
 
 @user_controller.route("/signin", methods=["POST"])
 def signin():
+    credentials = request.get_json()
+    if not Utils.validate_json(
+            credentials, ["email", "password"]
+        ):
+        return jsonify({
+            "msg": "invalid signin data"
+        }), 400
+    
     try:
-        credentials = request.get_json()
-        if not Utils.validate_signin_data(credentials):
-            return jsonify({
-                "msg": "invalid signin data"
-            }), 400
-        
         user = User.find_by_email(credentials["email"])
-        if user is None or not user.password == credentials["password"]:
+        if user is None:
+           return jsonify({
+                "msg": "user not exits"
+            }), 400 
+        
+        if user.password != credentials["password"]:
             return jsonify({
                 "msg": "invalid email or password"
             }), 401
@@ -84,203 +91,25 @@ def signin():
 @user_controller.route("/", methods=["GET"])
 def get_user():
     token = request.headers.get("AUTHORIZATION", None)
-    if not token:
+    decoded_token = jwt.decode(token)
+    if decoded_token is None:
         return jsonify({
-            "msg": "token header is empty"
+            "msg": "invalid token"
         }), 401
     
     try:
-        decoded_token = jwt.decode(token)
-        if not decoded_token.get("id", None):
-            return jsonify({
-                "msg": "invalid token"
-            }), 401
-        
-        data_user = User.find_by_id(decoded_token["id"])
-        if data_user == None:
+        user_data = User.find_by_id(decoded_token["id"])
+        if user_data == None:
             return jsonify({
                 "msg": "user not exits"
             }), 400
         
         return jsonify({
-            "username": data_user.username,
-            "email": data_user.email
+            "username": user_data.username,
+            "email": user_data.email
         }), 200
     except:
         return jsonify({
             "msg": "bad requests"
         }), 400
 
-#playlists
-@user_controller.route("/playlist", methods=["POST"])
-def create_playlist():
-    token = request.headers.get("AUTHORIZATION", None)
-    if not token:
-        return jsonify({
-            "msg": "token header is empty"
-        }), 401
-    
-    new_playlist = request.get_json()
-    if new_playlist["name"] is None:
-        return jsonify({
-            "msg": "Error must be name"
-        }), 400
-
-    try:
-        decoded_token = jwt.decode(token)
-        user_id = decoded_token.get("id", None)
-        if user_id is None:
-            return jsonify({
-                "msg": "invalid token"
-            }), 401
-        
-        if Playlist(user_id, new_playlist["name"]).save() is False:
-            return jsonify({
-                "msg": "Error saving playlist"
-            }), 500
-
-        return jsonify({
-            "msg": "playlist created"
-        }), 201
-    except:
-        return jsonify({
-            "msg": "bad requests"
-        }), 400
-
-@user_controller.route("/playlist", methods=["GET"])
-def get_all_playlist():
-    token = request.headers.get("AUTHORIZATION", None)
-    if not token:
-        return jsonify({
-            "msg": "token header is empty"
-        }), 401
-    
-    try:
-        decoded_token = jwt.decode(token)
-        user_id = decoded_token.get("id", None)
-        if user_id is None:
-            return jsonify({
-                "msg": "invalid token"
-            }), 401
-        
-        playlists = Playlist.find_all(user_id)
-
-        response = list()
-        for playlist in playlists:
-            response.append({
-                "id": playlist.id,
-                "name": playlist.name
-            })
-
-        return jsonify({
-            "playlists": response
-        }), 200
-    except:
-        return jsonify({
-            "msg": "bad requests"
-        }), 400
-
-@user_controller.route("/playlist/<id>", methods=["GET"])
-def get_playlist(id):
-    token = request.headers.get("AUTHORIZATION", None)
-    if not token:
-        return jsonify({
-            "msg": "token header is empty"
-        }), 401
-
-    try:
-        decoded_token = jwt.decode(token)
-        user_id = decoded_token.get("id", None)
-        if user_id is None:
-            return jsonify({
-                "msg": "invalid token"
-            }), 401
-        
-        playlist = Playlist.find_by_id(id, user_id)
-        return jsonify({
-            "playlist": {
-                "id": playlist.id,
-                "name": playlist.name,
-                "tracks": []
-            } 
-        }), 200
-    except:
-        return jsonify({
-            "msg": "bad requests"
-        }), 400
-
-@user_controller.route("/playlist/track", methods=["POST"])
-def add_track_in_playlist():
-    token = request.headers.get("AUTHORIZATION", None)
-    if not token:
-        return jsonify({
-            "msg": "token header is empty"
-        }), 401
-    
-    new_link = request.get_json()
-    if new_link["track_id"] is None or new_link["playlist_id"]:
-        return jsonify({
-            "msg": "Error must be track_id and playlist_id"
-        }), 400
-    
-    # error user validation
-
-    try:
-        decoded_token = jwt.decode(token)
-        if not decoded_token.get("id", None):
-            return jsonify({
-                "msg": "invalid token"
-            }), 401
-        
-        if PlaylistTrack(
-            new_link["playlist_id"],
-            new_link["track_id"]
-        ).save() is False:
-            return jsonify({
-                "msg": "Error adding track in playlist"
-            }), 500
-        
-        return jsonify({
-            "msg": "add track in playlist"
-        }), 200
-    except:
-        return jsonify({
-            "msg": "bad requests"
-        }), 400
-    
-@user_controller.route("/playlist/track", methods=["DELETE"])
-def remove_track_in_playlist():
-    token = request.headers.get("AUTHORIZATION", None)
-    if not token:
-        return jsonify({
-            "msg": "token header is empty"
-        }), 401
-    
-    old_link = request.get_json()
-    if old_link["track_id"] is None or old_link["playlist_id"]:
-        return jsonify({
-            "msg": "Error must be track_id and playlist_id"
-        }), 400
-
-    try:
-        decoded_token = jwt.decode(token)
-        if not decoded_token.get("id", None):
-            return jsonify({
-                "msg": "invalid token"
-            }), 401
-        
-        if PlaylistTrack(
-            old_link["playlist_id"],
-            old_link["track_id"]
-        ).delete() is False:
-            return jsonify({
-                "msg": "Error deleting track in playlist"
-            }), 500
-        
-        return jsonify({
-            "msg": "add track in playlist"
-        }), 200
-    except:
-        return jsonify({
-            "msg": "bad requests"
-        }), 400

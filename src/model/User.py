@@ -32,9 +32,6 @@ class User(AbstractModel):
             cursor.close()
         return True
     
-    def update(self, **kwargs):
-        return True
-    
     @classmethod
     def find_by_id(_class, id):
         cursor = Database.get_connection().cursor()

@@ -1,29 +1,14 @@
 from flask import Blueprint, request, jsonify, send_file
 from model.Track import Track
-from model.File import File
-from model.Artist import Artist
 from model.ArtistTrack import ArtistTrack
+from model.File import File
 from utils import Utils
-from service.jsonWebToken import JsonWebToken
-from config import Config
 import io
 
-_config = Config()
-jwt = JsonWebToken(_config.jwt_secret)
-music_player_controller = Blueprint("music_player_controller", __name__, url_prefix='/mp')
+track_controller = Blueprint("track_controller", __name__, url_prefix='/')
 
-#file routes
-@music_player_controller.route("/file", methods=["GET"])
-def get_file():
-    id = request.args.get("id", default=None)
-    _type = request.args.get("type", default=None)
-    
-    # shit code
-    if id is None or _type is None:
-        return jsonify({
-            "msg": "Error must be id and type"
-        }), 400
-    
+@track_controller.route("/file/<_type>/<id>", methods=["GET"])
+def get_file(_type, id):
     try:
         file = File.find_by_id(id)
         if file is None:
@@ -37,8 +22,12 @@ def get_file():
         
         if _type == "audio":
             mimetype = "audio/mpeg"
-        else:
+        elif _type == "image":
             mimetype = "image/png"
+        else:
+            return jsonify({
+                "msg": "invalida type"
+            }), 400
         
         return send_file(
             men,
@@ -48,10 +37,9 @@ def get_file():
     except:
         return jsonify({
            "msg": "bad request"
-        }), 400 
+        }), 400
 
-# track routes
-@music_player_controller.route("/track", methods=["GET"])
+@track_controller.route("/track", methods=["GET"])
 def get_all_tracks():
     page = request.args.get("page", default=0, type=int)
     try:
@@ -81,16 +69,17 @@ def get_all_tracks():
             "msg": "bad request"
         }), 400
 
-@music_player_controller.route("/track/upload", methods=["POST"])
+@track_controller.route("/track/upload", methods=["POST"])
 def upload_track():
     audio_file = request.files.get("audio_file")
     image_file = request.files.get("image_file")
     track_name = request.form.get("name")
     
     if not audio_file or not image_file or not track_name:
-        return jsonify({
-            "msg": "audio_file, image_file or name are required"
-        }), 400
+        if audio_file == "" or image_file == "" or track_name == "":
+            return jsonify({
+                "msg": "audio_file, image_file or name are required"
+            }), 400
     
     try:
         if audio_file.content_type != "audio/mpeg":
@@ -133,67 +122,65 @@ def upload_track():
             "msg": "bad request"
         }), 400
 
-# artist routes
-@music_player_controller.route("/artist", methods=["POST"])
-def create_artist():
-    new_artist = request.get_json()
-    
-    if new_artist["name"] is None:
+@track_controller.route("/track/<id>", methods=["PUT"])
+def update_track_name(id):
+    new_track = request.get_json()
+    if not Utils.validate_json(
+            new_track, ["name"]
+        ):
         return jsonify({
             "msg": "Error must be name"
         }), 400
     
+    track = Track.find_by_id(id)
+    if track is None:
+        return jsonify({
+            "msg": "track not exits"
+        }), 400
+    
+    if track.update_name(new_track["name"]) is False:
+        return jsonify({
+            "msg": "Error updating artist_track"
+        }), 500
+
+    return jsonify({
+            "msg": "atrack updated"
+        }), 201    
+
+@track_controller.route("/track/<id>", methods=["DELETE"])
+def remove_track(id):
     try:
-        if Artist(new_artist["name"]).save() is False:
+        track = Track.find_by_id(id)
+        if track is None:
             return jsonify({
-                "msg": "Error saving artist"
+                "msg": "track not exits"
+            }), 400
+        
+        if track.delete() is False:
+            return jsonify({
+                "msg": "Error deleting track"
             }), 500
     
         return jsonify({
-                "msg": "artist created"
+                "msg": "track deleted"
             }), 201
-    except:
-        return jsonify({
-           "msg": "bad request"
-        }), 400
-        
-@music_player_controller.route("/artist", methods=["GET"])
-def get_all_artist():
-    page = request.args.get("page", default=0, type=int)
-    try:
-        artists = Artist.find_all(limit=25, offset=page * 25)
-        
-        response = list()
-        for artist in artists:
-            response.append({
-                "id": artist.id.__str__(),
-                "name": artist.name,
-            })
-    
-        return jsonify({
-                "artists": response
-            }), 201
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({
            "msg": "bad request"
         }), 400
 
-# artist_track
-@music_player_controller.route("/artist_track", methods=["POST"])
+@track_controller.route("/track/add/artist", methods=["POST"])
 def add_track_artist():
     new_link = request.get_json()
-    
-    if new_link["artist_id"] is None and new_link["track_id"] is None:
+    if not Utils.validate_json(
+            new_link, ["artist_id", "track_id"]
+        ):
         return jsonify({
             "msg": "Error must be artist_id and track_id"
         }), 400
     
     try:
-        # if ArtistTrack.find_by_id(new_link["artist_id"], new_link["track_id"]) is not None:
-        #     return jsonify({
-        #         "msg": "Error exists artist_track"
-        #     }), 400
-        
         if ArtistTrack(new_link["artist_id"], new_link["track_id"]).save() is False:
             return jsonify({
                 "msg": "Error saving artist_track"
@@ -208,34 +195,33 @@ def add_track_artist():
            "msg": "bad request"
         }), 400
 
-# @music_player_controller.route("/artist_track", methods=["DELETE"])
-# def remove_track_artist():
-#     new_link = request.get_json()
+@track_controller.route("/track/remove/artist", methods=["DELETE"])
+def remove_track_artist():
+    new_link = request.get_json()
+    if not Utils.validate_json(
+            new_link, ["artist_id", "track_id"]
+        ):
+        return jsonify({
+            "msg": "Error must be artist_id and track_id"
+        }), 400
     
-#     if new_link["artist_id"] is None and new_link["track_id"] is None:
-#         return jsonify({
-#             "msg": "Error must be artist_id and track_id"
-#         }), 400
-    
-#     try:
-#         # if ArtistTrack.find_by_id(
-#         #     new_link["artist_id"],
-#         #     new_link["track_id"]
-#         # ) is not None:
-#         #     return jsonify({
-#         #         "msg": "Error exists artist_track"
-#         #     }), 400
+    try:
+        artist_track =  ArtistTrack.find_by_id(new_link["artist_id"], new_link["track_id"])
+        if artist_track is None:
+            return jsonify({
+                "msg": "artist_track not exits"
+            }), 400
         
-#         if ArtistTrack(new_link["artist_id"], new_link["track_id"]).save() is False:
-#             return jsonify({
-#                 "msg": "Error saving artist_track"
-#             }), 500
+        if artist_track.delete() is False:
+            return jsonify({
+                "msg": "Error deleting artist_track"
+            }), 500
     
-#         return jsonify({
-#                 "msg": "artist_track created"
-#             }), 201
-#     except Exception as e:
-#         print(e)
-#         return jsonify({
-#            "msg": "bad request"
-#         }), 400
+        return jsonify({
+                "msg": "artist_track deleted"
+            }), 201
+    except Exception as e:
+        print(e)
+        return jsonify({
+           "msg": "bad request"
+        }), 400

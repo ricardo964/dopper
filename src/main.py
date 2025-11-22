@@ -2,7 +2,9 @@ from flask import Flask
 from config import Config
 
 from controller.UserController import user_controller
-from controller.MusicPlayerController import music_player_controller
+from controller.TrackController import track_controller
+from controller.ArtistController import artist_controller
+from controller.PlaylistUserController import playlist_controller
 
 app = Flask(__name__)
 
@@ -10,7 +12,9 @@ if __name__ == "__main__":
     server_config = Config()
     
     app.register_blueprint(user_controller)
-    app.register_blueprint(music_player_controller)
+    app.register_blueprint(track_controller)
+    app.register_blueprint(artist_controller)
+    app.register_blueprint(playlist_controller)
     
     @app.route("/keep_alive", methods=["GET"])
     def keep_alive():

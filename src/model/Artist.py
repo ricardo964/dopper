@@ -29,7 +29,28 @@ class Artist(AbstractModel):
             cursor.close()
         return True
     
-    def update(self, **kwargs):
+    def update_name(self, new_name: str):
+        cursor = Database.get_connection().cursor()
+        query = "UPDATE artists SET artist_name = ? WHERE artist_id = ?;"
+        try:
+            cursor.execute(query, (new_name, self.id.__str__()))    
+        except Exception as e:
+            print(f"Error finding user by id: {e}")
+            return False
+        finally:
+            cursor.close()
+        return True
+    
+    def delete(self):
+        cursor = Database.get_connection().cursor()
+        query = "DELETE FROM artists WHERE artist_id = ?;"
+        try:
+            cursor.execute(query, (self.id.__str__(),))    
+        except Exception as e:
+            print(f"Error finding user by id: {e}")
+            return False
+        finally:
+            cursor.close()
         return True
     
     @classmethod
@@ -64,7 +85,7 @@ class Artist(AbstractModel):
     @classmethod
     def find_by_id(_class, id):
         cursor = Database.get_connection().cursor()
-        query = "SELECT * FROM artist WHERE artist_id = ?"
+        query = "SELECT * FROM artists WHERE artist_id = ?"
         try:
             cursor.execute(query, (id,))
             result = cursor.fetchone()

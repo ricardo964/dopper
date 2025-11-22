@@ -18,6 +18,9 @@ class JsonWebToken(AbtractJsonWebToken):
         return token
     
     def decode(self, token: str) -> dict:
+        if token is None:
+            return None
+        
         try:
             token = jwt.decode(
                 token,

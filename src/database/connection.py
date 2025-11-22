@@ -13,6 +13,11 @@ class Database:
                     _config.db_filename,
                     autocommit=True
                 )
+                
+                cursor = Database.connection.cursor()
+                cursor.execute("PRAGMA foreign_keys = ON;")
+                cursor.close()
+                
             except:
                 raise ValueError("ERROR TO CREATE OR READ DATABASE")
         return Database.connection

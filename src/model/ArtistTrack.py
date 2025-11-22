@@ -26,6 +26,18 @@ class ArtistTrack(AbstractModel):
             cursor.close()
         return True
     
+    def delete(self):
+        cursor = Database.get_connection().cursor()
+        query = "DELETE FROM artists_tracks WHERE at_track_id = ? AND at_artist_id = ?;"
+        try:
+            cursor.execute(query, (self.track_id.__str__(), self.artist_id.__str__()))    
+        except Exception as e:
+            print(f"Error deleting artist_track by id: {e}")
+            return False
+        finally:
+            cursor.close()
+        return True
+    
     @classmethod
     def find_by_id(_class, artist_id, track_id):
         cursor = Database.get_connection().cursor()
@@ -38,7 +50,7 @@ class ArtistTrack(AbstractModel):
             
             if result is not None:
                 _artist_id, _track_id = result
-                _cls = _class(UUID(_artist_id), UUID(_track_id))
+                _cls = _class(_artist_id, _track_id)
 
                 return _cls
         except Exception as e:
@@ -48,9 +60,6 @@ class ArtistTrack(AbstractModel):
         
         return None
     
-    def update(self, **kwargs) -> bool:
-        pass
-    
 class ArtistTrackMigration(AbstractModelMigration):
     def create(self) -> bool:
         cursor = Database.get_connection().cursor()
@@ -58,8 +67,8 @@ class ArtistTrackMigration(AbstractModelMigration):
         CREATE TABLE artists_tracks (
             at_artist_id CHAR(16) NOT NULL,
             at_track_id CHAR(16) NOT NULL,
-            FOREIGN KEY (at_artist_id) REFERENCES artists(artist_id),
-            FOREIGN KEY (at_track_id) REFERENCES tracks(track_id),
+            FOREIGN KEY (at_artist_id) REFERENCES artists(artist_id) ON DELETE CASCADE,
+            FOREIGN KEY (at_track_id) REFERENCES tracks(track_id) ON DELETE CASCADE,
             PRIMARY KEY (at_artist_id, at_track_id)
         );
         """

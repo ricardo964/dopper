@@ -5,15 +5,15 @@ from database.connection import Database
 from uuid import UUID, uuid4
 
 class Track(AbstractModel):
-    def __init__(self, name: str, duration_in_seconds: int, file_id: UUID, cover_file_id: UUID, gen_uuid = True) -> None:
-        if gen_uuid:  
+    def __init__(self, name: str, duration_in_seconds: int, file_id: str, cover_file_id: str, gen_id = True) -> None:
+        if gen_id:  
             self.id = uuid4()
         else:
             self.id = None
         self.name = name
         self.duration_in_seconds = duration_in_seconds
-        self.file_id = file_id
-        self.cover_file_id = cover_file_id
+        self.file_id = UUID(file_id)
+        self.cover_file_id = UUID(cover_file_id)
         self.artists = list()
 
     def save(self) -> bool:
@@ -41,7 +41,28 @@ class Track(AbstractModel):
         
         return True
     
-    def update(self, **kwargs):
+    def update_name(self, new_name: str):
+        cursor = Database.get_connection().cursor()
+        query = "UPDATE tracks SET track_name = ? WHERE track_id = ?;"
+        try:
+            cursor.execute(query, (new_name, self.id.__str__()))    
+        except Exception as e:
+            print(f"Error updeting track by id: {e}")
+            return False
+        finally:
+            cursor.close()
+        return True
+    
+    def delete(self):
+        cursor = Database.get_connection().cursor()
+        query = "DELETE FROM tracks WHERE track_id = ?;"
+        try:
+            cursor.execute(query, (self.id.__str__(),))    
+        except Exception as e:
+            print(f"Error deleting track by id: {e}")
+            return False
+        finally:
+            cursor.close()
         return True
     
     @classmethod
@@ -73,9 +94,9 @@ class Track(AbstractModel):
                     track = _class(
                         name,
                         duration,
-                        UUID(file_id),
-                        UUID(cover_id),
-                        gen_uuid=False
+                        file_id,
+                        cover_id,
+                        gen_id=False
                     )
                     
                     track.id = UUID(id)
@@ -110,13 +131,13 @@ class Track(AbstractModel):
             result = cursor.fetchone()
 
             if result is not None:
-                _id, _size, _data = result
-                _cls = _class(_size, _data, gen_id=False)
+                _id, _name, _duration_in_seconds, _file_id, _cover_file_id = result
+                _cls = _class(_name, _duration_in_seconds, _file_id, _cover_file_id, gen_id=False)
                 _cls.id = UUID(_id)
 
                 return _cls
         except Exception as e:
-            print(f"Error finding file by id: {e}")
+            print(f"Error finding track by id: {e}")
         finally:
             cursor.close()
         
@@ -132,8 +153,8 @@ class TrackMigration(AbstractModelMigration):
             track_duration_in_seconds INT NOT NULL,
             track_file_id CHAR(16) NOT NULL,
             track_cover_file_id CHAR(16) NOT NULL,
-            FOREIGN KEY (track_file_id) REFERENCES files(file_id),
-            FOREIGN KEY (track_cover_file_id) REFERENCES files(file_id)
+            FOREIGN KEY (track_file_id) REFERENCES files(file_id) ON DELETE CASCADE,
+            FOREIGN KEY (track_cover_file_id) REFERENCES files(file_id) ON DELETE CASCADE
         );
         """
         try:
