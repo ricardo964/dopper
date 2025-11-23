@@ -18,7 +18,7 @@ class Database:
                 cursor.execute("PRAGMA foreign_keys = ON;")
                 cursor.close()
                 
-            except:
-                raise ValueError("ERROR TO CREATE OR READ DATABASE")
+            except Exception as e:
+                raise ValueError("ERROR TO CREATE OR READ DATABASE", e)
         return Database.connection
         
