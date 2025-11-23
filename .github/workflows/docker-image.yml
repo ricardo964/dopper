@@ -7,12 +7,35 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag dopper:$(date +%s)
+      - uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: vars
+        run: echo "TAG=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag dopper:${TAG}
+
+      - name: Save Docker image to tar
+        run: docker save dopper:${TAG} -o dopper-${TAG}.tar
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Docker image ${TAG}"
+          tag_name: "image-${TAG}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Docker image artifact
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "image-${TAG}"
+          files: dopper-${TAG}.tar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
