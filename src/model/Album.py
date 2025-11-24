@@ -21,7 +21,7 @@ class Album(AbstractModel):
     
 class AlbumMigration(AbstractModelMigration):
     def create(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         table_define = """
         CREATE TABLE albums (
             album_id CHAR(16) NOT NULL PRIMARY KEY,
@@ -39,7 +39,7 @@ class AlbumMigration(AbstractModelMigration):
         return True
     
     def drop(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         query_define = "DROP TABLE albums;"
         try:
             cursor.execute(query_define)
@@ -48,5 +48,4 @@ class AlbumMigration(AbstractModelMigration):
             return False
         finally:
             cursor.close()
-
         return True

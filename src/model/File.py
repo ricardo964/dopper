@@ -13,7 +13,7 @@ class File(AbstractModel):
         self.data = data
 
     def save(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_cursor()
         insert_query = """
             INSERT INTO files (file_id, file_size, file_data)
             VALUES (?, ?, ?);
@@ -28,7 +28,7 @@ class File(AbstractModel):
             return False
         finally:
             cursor.close()
-        
+
         return True
     
     def update(self, **kwargs):
@@ -36,7 +36,7 @@ class File(AbstractModel):
 
     @classmethod
     def find_by_id(_class, id):
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_cursor()
         query_define = f"""
         SELECT * FROM files WHERE file_id = ?;
         """
@@ -54,12 +54,12 @@ class File(AbstractModel):
             print(f"Error finding file by id: {e}")
         finally:
             cursor.close()
-        
+
         return None
 
 class FileMigration(AbstractModelMigration):
     def create(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         table_define = """
         CREATE TABLE files (
             file_id CHAR(16) NOT NULL PRIMARY KEY,
@@ -78,7 +78,7 @@ class FileMigration(AbstractModelMigration):
         return True
     
     def drop(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         query_define = "DROP TABLE files;"
         try:
             cursor.execute(query_define)

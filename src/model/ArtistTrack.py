@@ -9,7 +9,7 @@ class ArtistTrack(AbstractModel):
         self.track_id = UUID(track_id)
     
     def save(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         insert_query = """
             INSERT INTO artists_tracks (at_artist_id, at_track_id)
             VALUES (?, ?);
@@ -27,7 +27,7 @@ class ArtistTrack(AbstractModel):
         return True
     
     def delete(self):
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         query = "DELETE FROM artists_tracks WHERE at_track_id = ? AND at_artist_id = ?;"
         try:
             cursor.execute(query, (self.track_id.__str__(), self.artist_id.__str__()))    
@@ -40,7 +40,7 @@ class ArtistTrack(AbstractModel):
     
     @classmethod
     def find_by_id(_class, artist_id, track_id):
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         query_define = f"""
             SELECT * FROM artists_tracks WHERE at_track_id = ? AND at_artist_id = ?;
         """
@@ -62,7 +62,7 @@ class ArtistTrack(AbstractModel):
     
 class ArtistTrackMigration(AbstractModelMigration):
     def create(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         table_define = """
         CREATE TABLE artists_tracks (
             at_artist_id CHAR(16) NOT NULL,
@@ -83,7 +83,7 @@ class ArtistTrackMigration(AbstractModelMigration):
         return True
     
     def drop(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         query_define = "DROP TABLE artists_tracks;"
         try:
             cursor.execute(query_define)

@@ -15,7 +15,7 @@ class User(AbstractModel):
         self.password = password
     
     def save(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_cursor()
         insert_query = """
             INSERT INTO users (user_id, user_username, user_email, user_password)
             VALUES (?, ?, ?, ?);
@@ -30,11 +30,12 @@ class User(AbstractModel):
             return False
         finally:
             cursor.close()
+        
         return True
     
     @classmethod
     def find_by_id(_class, id):
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_cursor()
         query = "SELECT * FROM users WHERE user_id = ?"
         try:
             cursor.execute(query, (id,))
@@ -58,7 +59,7 @@ class User(AbstractModel):
     
     @classmethod
     def find_by_email(_class, email):
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_cursor()
         query = "SELECT * FROM users WHERE user_email = ?"
         try:
             cursor.execute(query, (email,))
@@ -83,7 +84,7 @@ class User(AbstractModel):
 class UserMigration(AbstractModelMigration):
     
     def create(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_cursor()
         table_define = """
         CREATE TABLE users (
             user_id CHAR(16) NOT NULL PRIMARY KEY,
@@ -97,12 +98,10 @@ class UserMigration(AbstractModelMigration):
         except Exception as e:
             print(f"Error in migration {e}")
             return False
-        finally:
-            cursor.close()
         return True
     
     def drop(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_cursor()
         query_define = "DROP TABLE users;"
         try:
             cursor.execute(query_define)

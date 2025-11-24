@@ -17,7 +17,7 @@ class Track(AbstractModel):
         self.artists = list()
 
     def save(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_cursor()
         insert_query = """
             INSERT INTO tracks (track_id, track_name, track_duration_in_seconds, track_file_id, track_cover_file_id)
             VALUES (?, ?, ?, ?, ?);
@@ -38,11 +38,11 @@ class Track(AbstractModel):
             return False
         finally:
             cursor.close()
-        
+
         return True
     
     def update_name(self, new_name: str):
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_cursor()
         query = "UPDATE tracks SET track_name = ? WHERE track_id = ?;"
         try:
             cursor.execute(query, (new_name, self.id.__str__()))    
@@ -54,7 +54,7 @@ class Track(AbstractModel):
         return True
     
     def delete(self):
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_cursor()
         query = "DELETE FROM tracks WHERE track_id = ?;"
         try:
             cursor.execute(query, (self.id.__str__(),))    
@@ -63,11 +63,12 @@ class Track(AbstractModel):
             return False
         finally:
             cursor.close()
+        
         return True
     
     @classmethod
     def find_all(_class, limit: int = 25, offset: int = 0):
-        cursor  = Database.get_connection().cursor()
+        cursor  = Database.get_cursor()
         query_define = """
             SELECT
                 track_id,
@@ -117,12 +118,12 @@ class Track(AbstractModel):
             print(f"Error getting user: {e}")
         finally:
             cursor.close()
-            
+
         return []
 
     @classmethod
     def find_by_id(_class, id):
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_cursor()
         query_define = f"""
             SELECT * FROM tracks WHERE track_id = ?;
         """
@@ -140,12 +141,12 @@ class Track(AbstractModel):
             print(f"Error finding track by id: {e}")
         finally:
             cursor.close()
-        
+
         return None
     
 class TrackMigration(AbstractModelMigration):
     def create(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_cursor()
         table_define = """
         CREATE TABLE tracks (
             track_id CHAR(16) NOT NULL PRIMARY KEY,
@@ -164,11 +165,10 @@ class TrackMigration(AbstractModelMigration):
             return False
         finally:
             cursor.close()
-
         return True
     
     def drop(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_cursor()
         query_define = "DROP TABLE tracks;"
         try:
             cursor.execute(query_define)
@@ -177,5 +177,4 @@ class TrackMigration(AbstractModelMigration):
             return False
         finally:
             cursor.close()
-
         return True

@@ -49,7 +49,8 @@ def get_all_artist():
         return jsonify({
                 "artists": response
             }), 201
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({
            "msg": "bad request"
         }), 400

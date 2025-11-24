@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, g
 from config import Config
 
 from controller.UserController import user_controller
@@ -20,8 +20,14 @@ if __name__ == "__main__":
     def keep_alive():
         return "ok", 200
 
+    @app.teardown_appcontext
+    def close_connection(exception):
+        conn = getattr(g, "db_conn", None)
+        if conn:
+            conn.close()
+
     app.run(
         host="0.0.0.0",
         port=server_config.port,
-        debug=server_config.debug_mode
+        debug=server_config.debug_mode,
     )

@@ -12,7 +12,7 @@ class Artist(AbstractModel):
         self.name = name
     
     def save(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         insert_query = """
             INSERT INTO artists (artist_id, artist_name)
             VALUES (?, ?);
@@ -30,7 +30,7 @@ class Artist(AbstractModel):
         return True
     
     def update_name(self, new_name: str):
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         query = "UPDATE artists SET artist_name = ? WHERE artist_id = ?;"
         try:
             cursor.execute(query, (new_name, self.id.__str__()))    
@@ -42,7 +42,7 @@ class Artist(AbstractModel):
         return True
     
     def delete(self):
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         query = "DELETE FROM artists WHERE artist_id = ?;"
         try:
             cursor.execute(query, (self.id.__str__(),))    
@@ -55,7 +55,7 @@ class Artist(AbstractModel):
     
     @classmethod
     def find_all(_class, limit: int = 25, offset: int = 0):
-        cursor  = Database.get_connection().cursor()
+        cursor  = Database.get_connection()
         query_define = f"""
             SELECT * FROM artists
             LIMIT {limit} OFFSET {offset};
@@ -77,14 +77,13 @@ class Artist(AbstractModel):
             return artists
         except Exception as e:
             print(f"Error getting artist: {e}")
-        finally:
-            cursor.close()
+   
             
         return []
     
     @classmethod
     def find_by_id(_class, id):
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         query = "SELECT * FROM artists WHERE artist_id = ?"
         try:
             cursor.execute(query, (id,))
@@ -104,7 +103,7 @@ class Artist(AbstractModel):
 
 class ArtistMigration(AbstractModelMigration):
     def create(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         table_define = """
         CREATE TABLE artists (
             artist_id CHAR(16) NOT NULL PRIMARY KEY,
@@ -122,7 +121,7 @@ class ArtistMigration(AbstractModelMigration):
         return True
     
     def drop(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         query_define = "DROP TABLE artists;"
         try:
             cursor.execute(query_define)

@@ -47,7 +47,8 @@ def signup():
             "token": token
         }), 201
 
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({
             "msg": "bad requests"
         }), 400
@@ -61,14 +62,13 @@ def signin():
         return jsonify({
             "msg": "invalid signin data"
         }), 400
-    
     try:
         user = User.find_by_email(credentials["email"])
         if user is None:
            return jsonify({
                 "msg": "user not exits"
-            }), 400 
-        
+            }), 400
+
         if user.password != credentials["password"]:
             return jsonify({
                 "msg": "invalid email or password"
@@ -83,14 +83,15 @@ def signin():
             "token": token
         }), 200
 
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({
             "msg": "bad requests"
         }), 400
 
 @user_controller.route("/", methods=["GET"])
 def get_user():
-    token = request.headers.get("AUTHORIZATION", None)
+    token = request.headers.get("AUTHORIZATION1", None)
     decoded_token = jwt.decode(token)
     if decoded_token is None:
         return jsonify({
@@ -108,7 +109,8 @@ def get_user():
             "username": user_data.username,
             "email": user_data.email
         }), 200
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({
             "msg": "bad requests"
         }), 400

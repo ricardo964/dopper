@@ -8,7 +8,6 @@ class JsonWebToken(AbtractJsonWebToken):
         self.secret_key = secret_key
     
     def encode(self, payload: dict) -> str:
-        print(self.secret_key)
         token = jwt.encode(
             payload,
             self.secret_key,

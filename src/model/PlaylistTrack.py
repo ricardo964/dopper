@@ -9,7 +9,7 @@ class PlaylistTrack(AbstractModel):
         self.track_id = UUID(track_id)
     
     def save(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         insert_query = """
             INSERT INTO playlists_tracks (pt_playlist_id, pt_track_id)
             VALUES (?, ?);
@@ -32,7 +32,7 @@ class PlaylistTrack(AbstractModel):
     
     @classmethod
     def delete(_class, playlist_id, track_id):
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         insert_query = """
             DELETE FROM playlists_tracks
             WHERE pt_playlist_id = ? AND pt_track_id = ?;
@@ -47,11 +47,12 @@ class PlaylistTrack(AbstractModel):
             return False
         finally:
             cursor.close()
+
         return True
 
 class PlaylistTrackMigration(AbstractModelMigration):
     def create(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         table_define = """
         CREATE TABLE playlists_tracks (
             pt_playlist_id CHAR(16) NOT NULL,
@@ -72,7 +73,7 @@ class PlaylistTrackMigration(AbstractModelMigration):
         return True
     
     def drop(self) -> bool:
-        cursor = Database.get_connection().cursor()
+        cursor = Database.get_connection()
         query_define = "DROP TABLE playlists_tracks;"
         try:
             cursor.execute(query_define)
@@ -81,5 +82,4 @@ class PlaylistTrackMigration(AbstractModelMigration):
             return False
         finally:
             cursor.close()
-
         return True

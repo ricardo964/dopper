@@ -11,7 +11,7 @@ playlist_controller = Blueprint("playlist_controller", __name__, url_prefix='/')
 
 @playlist_controller.route("/playlist", methods=["POST"])
 def create_playlist():
-    token = request.headers.get("AUTHORIZATION", None)
+    token = request.headers.get("AUTHORIZATION1", None)
     if not token:
         return jsonify({
             "msg": "token header is empty"
@@ -48,7 +48,7 @@ def create_playlist():
 
 @playlist_controller.route("/playlist", methods=["GET"])
 def get_all_playlist():
-    token = request.headers.get("AUTHORIZATION", None)
+    token = request.headers.get("AUTHORIZATION1", None)
     if not token:
         return jsonify({
             "msg": "token header is empty"
@@ -81,7 +81,7 @@ def get_all_playlist():
 
 @playlist_controller.route("/playlist/<id>", methods=["GET"])
 def get_playlist(id):
-    token = request.headers.get("AUTHORIZATION", None)
+    token = request.headers.get("AUTHORIZATION1", None)
     if not token:
         return jsonify({
             "msg": "token header is empty"
@@ -126,7 +126,7 @@ def get_playlist(id):
 
 @playlist_controller.route("/playlist/<id>", methods=["PUT"])
 def update_name_playlist(id):
-    token = request.headers.get("AUTHORIZATION", None)
+    token = request.headers.get("AUTHORIZATION1", None)
     if not token:
         return jsonify({
             "msg": "token header is empty"
@@ -169,7 +169,7 @@ def update_name_playlist(id):
 
 @playlist_controller.route("/playlist/<id>", methods=["DELETE"])
 def remove_playlist(id):
-    token = request.headers.get("AUTHORIZATION", None)
+    token = request.headers.get("AUTHORIZATION1", None)
     if not token:
         return jsonify({
             "msg": "token header is empty"
@@ -204,7 +204,7 @@ def remove_playlist(id):
 
 @playlist_controller.route("/playlist/track", methods=["POST"])
 def add_track_in_playlist():
-    token = request.headers.get("AUTHORIZATION", None)
+    token = request.headers.get("AUTHORIZATION1", None)
     if not token:
         return jsonify({
             "msg": "token header is empty"
@@ -245,7 +245,7 @@ def add_track_in_playlist():
     
 @playlist_controller.route("/playlist/track", methods=["DELETE"])
 def remove_track_in_playlist():
-    token = request.headers.get("AUTHORIZATION", None)
+    token = request.headers.get("AUTHORIZATION1", None)
     if not token:
         return jsonify({
             "msg": "token header is empty"

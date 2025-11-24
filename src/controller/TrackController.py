@@ -34,7 +34,8 @@ def get_file(_type, id):
             mimetype=mimetype,
         ), 200
         
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({
            "msg": "bad request"
         }), 400
@@ -64,7 +65,8 @@ def get_all_tracks():
         return jsonify({
             "tracks": response
         }), 200
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({
             "msg": "bad request"
         }), 400
@@ -75,11 +77,15 @@ def upload_track():
     image_file = request.files.get("image_file")
     track_name = request.form.get("name")
     
-    if not audio_file or not image_file or not track_name:
-        if audio_file == "" or image_file == "" or track_name == "":
-            return jsonify({
-                "msg": "audio_file, image_file or name are required"
-            }), 400
+    if audio_file == "" or image_file == "" or track_name == "":
+        return jsonify({
+            "msg": "audio_file, image_file or name are required"
+        }), 400
+    
+    if audio_file is None or image_file is None or track_name is None:
+        return jsonify({
+            "msg": "audio_file, image_file or name are required"
+        }), 400
     
     try:
         if audio_file.content_type != "audio/mpeg":
@@ -89,7 +95,7 @@ def upload_track():
             
         audio_buffer = audio_file.read()
         _file = File(len(audio_buffer), audio_buffer)
-        track_file_id = _file.id
+        track_file_id = _file.id.__str__()
         if _file.save() == False:
             return jsonify({
                 "msg": "Error saving audio file"
@@ -97,7 +103,7 @@ def upload_track():
         
         image_buffer = image_file.read()
         _file = File(len(audio_buffer), image_buffer)
-        track_cover_id = _file.id
+        track_cover_id = _file.id.__str__()
         if  _file.save() is False:
             return jsonify({
                 "msg": "Error saving image file"
