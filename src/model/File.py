@@ -59,7 +59,7 @@ class File(AbstractModel):
 
 class FileMigration(AbstractModelMigration):
     def create(self) -> bool:
-        cursor = Database.get_connection()
+        cursor = Database.get_cursor()
         table_define = """
         CREATE TABLE files (
             file_id CHAR(16) NOT NULL PRIMARY KEY,
@@ -78,7 +78,7 @@ class FileMigration(AbstractModelMigration):
         return True
     
     def drop(self) -> bool:
-        cursor = Database.get_connection()
+        cursor = Database.get_cursor()
         query_define = "DROP TABLE files;"
         try:
             cursor.execute(query_define)

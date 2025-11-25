@@ -13,4 +13,3 @@ Dockerfile
 .idea/
 .vscode/
 .venv
-*.db
