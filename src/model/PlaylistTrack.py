@@ -9,7 +9,7 @@ class PlaylistTrack(AbstractModel):
         self.track_id = UUID(track_id)
     
     def save(self) -> bool:
-        cursor = Database.get_connection()
+        cursor = Database.get_cursor()
         insert_query = """
             INSERT INTO playlists_tracks (pt_playlist_id, pt_track_id)
             VALUES (?, ?);
@@ -27,12 +27,29 @@ class PlaylistTrack(AbstractModel):
         return True
 
     @classmethod
-    def find_by_id(_class, id):
-        pass
+    def find_by_id(_class, playlist_id: str, track_id: str):
+        cursor = Database.get_cursor()
+        query_define = f"""
+            SELECT * FROM playlists_tracks WHERE pt_playlist_id = ? AND pt_track_id = ?;
+        """
+        try:
+            cursor.execute(query_define, (playlist_id, track_id))
+            result = cursor.fetchone()
+            
+            if result is not None:
+                _artist_id, _track_id = result
+                _cls = _class(_artist_id, _track_id)
+
+                return _cls
+        except Exception as e:
+            print(f"Error finding file by id: {e}")
+        finally:
+            cursor.close()
+        
+        return None
     
-    @classmethod
-    def delete(_class, playlist_id, track_id):
-        cursor = Database.get_connection()
+    def delete(self):
+        cursor = Database.get_cursor()
         insert_query = """
             DELETE FROM playlists_tracks
             WHERE pt_playlist_id = ? AND pt_track_id = ?;
@@ -40,7 +57,7 @@ class PlaylistTrack(AbstractModel):
         try:
             cursor.execute(
                 insert_query,
-                (playlist_id, track_id)
+                (self.playlist_id.__str__(), self.track_id.__str__())
             )
         except Exception as e:
             print(f"Error saving playlists_tracks: {e}")
@@ -52,7 +69,7 @@ class PlaylistTrack(AbstractModel):
 
 class PlaylistTrackMigration(AbstractModelMigration):
     def create(self) -> bool:
-        cursor = Database.get_connection()
+        cursor = Database.get_cursor()
         table_define = """
         CREATE TABLE playlists_tracks (
             pt_playlist_id CHAR(16) NOT NULL,
@@ -73,7 +90,7 @@ class PlaylistTrackMigration(AbstractModelMigration):
         return True
     
     def drop(self) -> bool:
-        cursor = Database.get_connection()
+        cursor = Database.get_cursor()
         query_define = "DROP TABLE playlists_tracks;"
         try:
             cursor.execute(query_define)

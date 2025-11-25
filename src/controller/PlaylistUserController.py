@@ -218,10 +218,10 @@ def add_track_in_playlist():
         }), 401
     
     new_link = request.get_json()
-    print(new_link)
     if not Utils.validate_json(
             new_link, ["track_id", "playlist_id"]
         ):
+        print(new_link)
         return jsonify({
             "msg": "invalid playlist data"
         }), 400
@@ -238,7 +238,8 @@ def add_track_in_playlist():
         return jsonify({
             "msg": "add track in playlist"
         }), 200
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({
             "msg": "bad requests"
         }), 400
@@ -259,16 +260,25 @@ def remove_track_in_playlist():
         }), 401
     
     old_link = request.get_json()
-    if old_link["track_id"] is None or old_link["playlist_id"]:
+    if not Utils.validate_json(
+            old_link, ["track_id", "playlist_id"]
+        ):
         return jsonify({
-            "msg": "Error must be track_id and playlist_id"
+            "msg": "invalid playlist data"
         }), 400
 
     try:
-        if PlaylistTrack(
+        playlistTrack = PlaylistTrack.find_by_id(
             old_link["playlist_id"],
             old_link["track_id"]
-        ).delete() is False:
+        )
+
+        if playlistTrack is None:
+            return jsonify({
+                "msg": "track not exits"
+            }), 400
+
+        if playlistTrack.delete() is False:
             return jsonify({
                 "msg": "Error deleting track in playlist"
             }), 500
@@ -276,7 +286,8 @@ def remove_track_in_playlist():
         return jsonify({
             "msg": "add track in playlist"
         }), 200
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({
             "msg": "bad requests"
         }), 400

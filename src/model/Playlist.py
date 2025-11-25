@@ -16,7 +16,7 @@ class Playlist(AbstractModel):
         self.tracks = list()
             
     def save(self) -> bool:
-        cursor = Database.get_connection()
+        cursor = Database.get_cursor()
         insert_query = """
             INSERT INTO playlists (playlist_id, playlist_user_id, playlist_name)
             VALUES (?, ?, ?);
@@ -34,7 +34,7 @@ class Playlist(AbstractModel):
         return True
     
     def delete(self):
-        cursor = Database.get_connection()
+        cursor = Database.get_cursor()
         insert_query = """
             DELETE FROM playlists
             WHERE playlist_id = ?;
@@ -49,7 +49,7 @@ class Playlist(AbstractModel):
         return True
     
     def update_name(self, new_name):
-        cursor = Database.get_connection()
+        cursor = Database.get_cursor()
         query = "UPDATE playlists SET playlist_name = ? WHERE playlist_id = ?;"
         try:
             cursor.execute(query, (new_name, self.id.__str__()))    
@@ -62,7 +62,7 @@ class Playlist(AbstractModel):
     
     @classmethod
     def find_all(_class, user_id):
-        cursor = Database.get_connection()
+        cursor = Database.get_cursor()
         query = "SELECT * FROM playlists WHERE playlist_user_id = ?"
         try:
             cursor.execute(query, (user_id,))
@@ -88,7 +88,7 @@ class Playlist(AbstractModel):
 
     @classmethod
     def find_by_id(_class, id, user_id):
-        cursor = Database.get_connection()
+        cursor = Database.get_cursor()
         
         query = """
             SELECT
@@ -186,7 +186,7 @@ class Playlist(AbstractModel):
     
 class PlaylistMigration(AbstractModelMigration):
     def create(self) -> bool:
-        cursor = Database.get_connection()
+        cursor = Database.get_cursor()
         table_define = """
         CREATE TABLE playlists (
             playlist_id CHAR(16) NOT NULL PRIMARY KEY,
@@ -203,7 +203,7 @@ class PlaylistMigration(AbstractModelMigration):
         return True
     
     def drop(self) -> bool:
-        cursor = Database.get_connection()
+        cursor = Database.get_cursor()
         query_define = "DROP TABLE playlists;"
         try:
             cursor.execute(query_define)
