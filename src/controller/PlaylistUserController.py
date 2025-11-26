@@ -5,8 +5,7 @@ from utils import Utils
 from service.jsonWebToken import JsonWebToken
 from config import Config
 
-_config = Config()
-jwt = JsonWebToken(_config.jwt_secret)
+jwt = JsonWebToken(Config.jwt_secret)
 playlist_controller = Blueprint("playlist_controller", __name__, url_prefix='/')
 
 @playlist_controller.route("/playlist", methods=["POST"])
@@ -291,3 +290,23 @@ def remove_track_in_playlist():
         return jsonify({
             "msg": "bad requests"
         }), 400
+
+@playlist_controller.route("/playlist/recomendation/<id>", methods=["POST"])
+def get_recomendation():
+    token = request.headers.get("AUTHORIZATION1", None)
+    if not token:
+        return jsonify({
+            "msg": "token header is empty"
+        }), 401
+    
+    decoded_token = jwt.decode(token)
+    user_id = decoded_token.get("id", None)
+    if user_id is None:
+        return jsonify({
+            "msg": "invalid token"
+        }), 401
+    
+    try:
+        pass
+    except:
+        pass

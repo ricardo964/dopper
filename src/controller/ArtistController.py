@@ -2,10 +2,7 @@ from flask import Blueprint, request, jsonify
 from model.Artist import Artist
 from utils import Utils
 from service.jsonWebToken import JsonWebToken
-from config import Config
 
-_config = Config()
-jwt = JsonWebToken(_config.jwt_secret)
 artist_controller = Blueprint("artist_controller", __name__, url_prefix='/')
 
 # artist routes

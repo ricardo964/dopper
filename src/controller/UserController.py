@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
+from time import time_ns
 from model.User import User
 from utils import Utils
 from service.jsonWebToken import JsonWebToken
 from config import Config
 
-_config = Config()
-jwt = JsonWebToken(_config.jwt_secret)
+jwt = JsonWebToken(Config.jwt_secret)
 user_controller = Blueprint("user_controller", __name__, url_prefix='/user')
 
 @user_controller.route("/signup", methods=["POST"])
@@ -39,7 +39,8 @@ def signup():
             }), 500
 
         token = jwt.encode({
-            "id": new_user.id.__str__()
+            "id": new_user.id.__str__(),
+            "_t": time_ns().__str__() 
         })
 
         return jsonify({
@@ -75,7 +76,8 @@ def signin():
             }), 401
         
         token = jwt.encode({
-            "id": user.id.__str__()
+            "id": user.id.__str__(),
+            "_t": time_ns().__str__()
         })
 
         return jsonify({

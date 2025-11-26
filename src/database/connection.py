@@ -11,11 +11,9 @@ class Database:
         if hasattr(Database._local, "conn"):
             return Database._local.conn
 
-        config = Config()
-
         try:
             conn = sqlite3.connect(
-                config.db_filename,
+                Config.db_filename,
                 check_same_thread=True,
                 isolation_level=None
             )

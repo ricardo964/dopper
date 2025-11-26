@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export PORT=4000
-export DEBUG=True
+export DEBUG=TRUE
 export DB_FILENAME=database.db
 export JWT_SECRET=secret
 

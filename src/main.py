@@ -9,7 +9,7 @@ from controller.PlaylistUserController import playlist_controller
 app = Flask(__name__)
 
 if __name__ == "__main__":
-    server_config = Config()
+    Config()
     
     app.register_blueprint(user_controller)
     app.register_blueprint(track_controller)
@@ -28,6 +28,6 @@ if __name__ == "__main__":
 
     app.run(
         host="0.0.0.0",
-        port=server_config.port,
-        debug=server_config.debug_mode,
+        port=Config.port,
+        debug=Config.debug_mode,
     )
