@@ -1,5 +1,6 @@
 from flask import Flask, g
 from config import Config
+Config.load()
 
 from controller.UserController import user_controller
 from controller.TrackController import track_controller
@@ -9,8 +10,6 @@ from controller.PlaylistUserController import playlist_controller
 app = Flask(__name__)
 
 if __name__ == "__main__":
-    Config()
-    
     app.register_blueprint(user_controller)
     app.register_blueprint(track_controller)
     app.register_blueprint(artist_controller)

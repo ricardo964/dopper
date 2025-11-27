@@ -80,34 +80,3 @@ class User(AbstractModel):
         finally:
             cursor.close()
         return None
-    
-class UserMigration(AbstractModelMigration):
-    
-    def create(self) -> bool:
-        cursor = Database.get_cursor()
-        table_define = """
-        CREATE TABLE users (
-            user_id CHAR(16) NOT NULL PRIMARY KEY,
-            user_username VARCHAR(50) NOT NULL,
-            user_email VARCHAR(50) NOT NULL UNIQUE,
-            user_password VARCHAR(100) NOT NULL
-        );
-        """
-        try:
-            cursor.execute(table_define)
-        except Exception as e:
-            print(f"Error in migration {e}")
-            return False
-        return True
-    
-    def drop(self) -> bool:
-        cursor = Database.get_cursor()
-        query_define = "DROP TABLE users;"
-        try:
-            cursor.execute(query_define)
-        except Exception as e:
-            print(f"Error in migration {e}")
-            return False
-        finally:
-            cursor.close()
-        return True

@@ -18,13 +18,10 @@ class Database:
                 isolation_level=None
             )
             conn.row_factory = sqlite3.Row
-
             conn.execute("PRAGMA foreign_keys = ON;")
-
             Database._local.conn = conn
 
             g.db_conn = conn
-
         except Exception as e:
             raise ValueError("ERROR TO CREATE OR READ DATABASE") from e
 

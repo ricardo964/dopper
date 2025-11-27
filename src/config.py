@@ -1,6 +1,5 @@
 import os
 
-# change to singleton later
 class Config:
     port: int
     debug_mode: bool
@@ -8,8 +7,9 @@ class Config:
     jwt_secret: str
     isLoaded: bool = False
     
-    def __init__(self) -> None:
-        if Config.isLoaded:
+    @staticmethod
+    def load() -> None:
+        if Config.isLoaded == False:
             Config.isLoaded = True
             if not os.getenv("PORT"):
                 raise ValueError("PORT NOT PROVIDER")
