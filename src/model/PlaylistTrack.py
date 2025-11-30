@@ -1,5 +1,4 @@
 from model.AbstractModel import AbstractModel
-from model.AbstractModelMigration import AbstractModelMigration
 from database.connection import Database
 from uuid import UUID, uuid4
 
@@ -65,38 +64,4 @@ class PlaylistTrack(AbstractModel):
         finally:
             cursor.close()
 
-        return True
-
-class PlaylistTrackMigration(AbstractModelMigration):
-    def create(self) -> bool:
-        cursor = Database.get_cursor()
-        table_define = """
-        CREATE TABLE playlists_tracks (
-            pt_playlist_id CHAR(16) NOT NULL,
-            pt_track_id CHAR(16) NOT NULL,
-            FOREIGN KEY (pt_playlist_id) REFERENCES playlists(playlist_id),
-            FOREIGN KEY (pt_track_id) REFERENCES tracks(track_id),
-            PRIMARY KEY (pt_playlist_id, pt_track_id)
-        );
-        """
-        try:
-            cursor.execute(table_define)
-        except Exception as e:
-            print(f"Error in migration {e}")
-            return False
-        finally:
-            cursor.close()
-
-        return True
-    
-    def drop(self) -> bool:
-        cursor = Database.get_cursor()
-        query_define = "DROP TABLE playlists_tracks;"
-        try:
-            cursor.execute(query_define)
-        except Exception as e:
-            print(f"Error in migration {e}")
-            return False
-        finally:
-            cursor.close()
         return True

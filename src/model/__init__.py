@@ -1,9 +1,7 @@
-from model.User import User, UserMigration
-from model.Track import Track, TrackMigration
-from model.Artist import Artist, ArtistMigration
-from model.Album import Album, AlbumMigration
-from model.File import File, FileMigration
-from model.Playlist import Playlist, PlaylistMigration
-
-from model.ArtistTrack import ArtistTrack, ArtistTrackMigration
-from model.PlaylistTrack import PlaylistTrack, PlaylistTrackMigration
+from model.User import User
+from model.Track import Track
+from model.Artist import Artist
+from model.File import File
+from model.Playlist import Playlist
+from model.ArtistTrack import ArtistTrack
+from model.PlaylistTrack import PlaylistTrack

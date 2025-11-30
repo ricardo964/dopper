@@ -1,5 +1,4 @@
 from model.AbstractModel import AbstractModel
-from model.AbstractModelMigration import AbstractModelMigration
 from database.connection import Database
 from uuid import UUID, uuid4
 
@@ -56,36 +55,3 @@ class File(AbstractModel):
             cursor.close()
 
         return None
-
-class FileMigration(AbstractModelMigration):
-    def create(self) -> bool:
-        cursor = Database.get_cursor()
-        table_define = """
-        CREATE TABLE files (
-            file_id CHAR(16) NOT NULL PRIMARY KEY,
-            file_size INT NOT NULL,
-            file_data BLOB NOT NULL
-        );
-        """
-        try:
-            cursor.execute(table_define)
-        except Exception as e:
-            print(f"Error in migration {e}")
-            return False
-        finally:
-            cursor.close()
-
-        return True
-    
-    def drop(self) -> bool:
-        cursor = Database.get_cursor()
-        query_define = "DROP TABLE files;"
-        try:
-            cursor.execute(query_define)
-        except Exception as e:
-            print(f"Error in migration {e}")
-            return False
-        finally:
-            cursor.close()
-
-        return True

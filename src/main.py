@@ -1,5 +1,6 @@
 from flask import Flask, g
 from config import Config
+Config.load()
 
 from controller.UserController import user_controller
 from controller.TrackController import track_controller
@@ -9,8 +10,6 @@ from controller.PlaylistUserController import playlist_controller
 app = Flask(__name__)
 
 if __name__ == "__main__":
-    server_config = Config()
-    
     app.register_blueprint(user_controller)
     app.register_blueprint(track_controller)
     app.register_blueprint(artist_controller)
@@ -28,6 +27,6 @@ if __name__ == "__main__":
 
     app.run(
         host="0.0.0.0",
-        port=server_config.port,
-        debug=server_config.debug_mode,
+        port=Config.port,
+        debug=Config.debug_mode,
     )

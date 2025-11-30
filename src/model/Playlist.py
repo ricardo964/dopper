@@ -1,5 +1,4 @@
 from model.AbstractModel import AbstractModel
-from model.AbstractModelMigration import AbstractModelMigration
 from database.connection import Database
 from model.Track import Track
 from model.Artist import Artist
@@ -183,33 +182,3 @@ class Playlist(AbstractModel):
         finally:
             cursor.close()
         return None
-    
-class PlaylistMigration(AbstractModelMigration):
-    def create(self) -> bool:
-        cursor = Database.get_cursor()
-        table_define = """
-        CREATE TABLE playlists (
-            playlist_id CHAR(16) NOT NULL PRIMARY KEY,
-            playlist_user_id CHAR(16) NOT NULL,
-            playlist_name VARCHAR(100) NOT NULL,
-            FOREIGN KEY (playlist_user_id) REFERENCES users(user_id)
-        );
-        """
-        try:
-            cursor.execute(table_define)
-        except Exception as e:
-            print(f"Error in migration {e}")
-            return False
-        return True
-    
-    def drop(self) -> bool:
-        cursor = Database.get_cursor()
-        query_define = "DROP TABLE playlists;"
-        try:
-            cursor.execute(query_define)
-        except Exception as e:
-            print(f"Error in migration {e}")
-            return False
-        finally:
-            cursor.close()
-        return True

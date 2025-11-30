@@ -123,7 +123,8 @@ def upload_track():
             "msg": "upload"
         }), 201
 
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({
             "msg": "bad request"
         }), 400
@@ -138,20 +139,26 @@ def update_track_name(id):
             "msg": "Error must be name"
         }), 400
     
-    track = Track.find_by_id(id)
-    if track is None:
-        return jsonify({
-            "msg": "track not exits"
-        }), 400
-    
-    if track.update_name(new_track["name"]) is False:
-        return jsonify({
-            "msg": "Error updating artist_track"
-        }), 500
+    try:
+        track = Track.find_by_id(id)
+        if track is None:
+            return jsonify({
+                "msg": "track not exits"
+            }), 400
 
-    return jsonify({
+        if track.update_name(new_track["name"]) is False:
+            return jsonify({
+                "msg": "Error updating artist_track"
+            }), 500
+        
+        return jsonify({
             "msg": "atrack updated"
         }), 201    
+    except Exception as e:
+        print(e)
+        return jsonify({
+            "msg": "bad request"
+        }), 400
 
 @track_controller.route("/track/<id>", methods=["DELETE"])
 def remove_track(id):
@@ -231,3 +238,16 @@ def remove_track_artist():
         return jsonify({
            "msg": "bad request"
         }), 400
+
+@track_controller.route("/track/piper", methods=["GET"])
+def get_search_piper():
+    query = request.args.get("query", default=None, type=str)
+    if query is None:
+        return jsonify({
+            "msg": "query"
+        })
+    
+    try:
+        pass
+    except:
+        pass
