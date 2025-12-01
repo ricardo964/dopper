@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from time import time_ns
-from model.User import User
+from model import User
 from utils import Utils
 from service.jsonWebToken import JsonWebToken
 from config import Config

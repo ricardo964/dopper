@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from model.Artist import Artist
+from model import Artist
 from utils import Utils
 from service.jsonWebToken import JsonWebToken
 

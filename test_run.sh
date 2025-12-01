@@ -9,6 +9,6 @@ export JWT_SECRET=secret
 echo "Migration api ..."
 ./.venv/bin/python3 src/migrate.py
 
-# echo "Execute api ..."
-# ./.venv/bin/python3 src/main.py
+echo "Execute api ..."
+./.venv/bin/python3 src/main.py
 
