@@ -60,6 +60,15 @@ tables = [
         artist_id CHAR(16) NOT NULL PRIMARY KEY,
         artist_name VARCHAR(50) NOT NULL
     );
+    """,
+    """
+    CREATE TABLE lyrics (
+        lyrics_id CHAR NOT NULL PRIMARY KEY,
+        lyrics_track_id CHAR(16) NOT NULL,
+        lyrics_text TEXT NOT NULL,
+        lyrics_lang VARCHAR(25) NOT NULL,
+        FOREIGN KEY (lyrics_track_id) REFERENCES tracks(track_id)
+    );
     """
 ]
 

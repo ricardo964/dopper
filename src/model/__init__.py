@@ -5,3 +5,4 @@ from model.File import File
 from model.Playlist import Playlist
 from model.ArtistTrack import ArtistTrack
 from model.PlaylistTrack import PlaylistTrack
+from model.Lyrics import Lyrics

@@ -1,11 +1,31 @@
 from flask import Blueprint, request, jsonify, send_file
-from model.Track import Track
-from model.ArtistTrack import ArtistTrack
-from model.File import File
+from engine import Piper, LANGUAGE
+from model import Track, Lyrics, ArtistTrack, File
 from utils import Utils
 import io
 
+piper = Piper()
+piper.isLoaded = False
 track_controller = Blueprint("track_controller", __name__, url_prefix='/')
+
+def reload_piper():
+    try:
+        all_lyrics = Lyrics.find_by_all()
+        if len(all_lyrics) == 0:
+            return jsonify({
+                "msg": "lyrics is empty"
+            }), 400
+        
+        for row in all_lyrics:
+            piper.index(row.track_id.__str__(), row.text, row.lang)
+
+        piper.vector_space.clear()
+        for row in all_lyrics:
+            document_vector = piper.compute_vector(row.text, row.lang)
+            piper.vector_space[row.track_id.__str__()] = document_vector
+
+    except Exception as e:
+        print(e)
 
 @track_controller.route("/file/<_type>/<id>", methods=["GET"])
 def get_file(_type, id):
@@ -239,15 +259,82 @@ def remove_track_artist():
            "msg": "bad request"
         }), 400
 
+# upload lyrics
+@track_controller.route("/track/piper", methods=["POST"])
+def add_lyrics_piper():
+    new_lyrics = request.get_json()
+    if not Utils.validate_json(
+            new_lyrics, ["lyrics", "track_id", "lang"]
+        ):
+        return jsonify({
+            "msg": "Error must be language, lyrics and track_id"
+        }), 400
+    
+    try:
+        if Track.find_by_id(new_lyrics["track_id"]) is None:
+            return jsonify({
+                "msg": "invalid track_id"
+            }), 201
+        
+        if new_lyrics["lang"] not in LANGUAGE:
+            return jsonify({
+                "msg": "invalid lenguage"
+            }), 400
+        
+        if Lyrics(new_lyrics["track_id"], new_lyrics["lyrics"], new_lyrics["lang"]).save() is False:
+            return jsonify({
+                "msg": "Internal Error"
+            }), 500
+
+        piper.index(
+            new_lyrics["track_id"],
+            new_lyrics["lyrics"],
+            new_lyrics["lang"]
+        )
+
+        reload_piper()
+        piper.isLoaded = True
+
+        return jsonify({
+            "msg": "lyrics created"
+        }), 201
+    except:
+        return jsonify({
+            "msg": "bad request"
+        }), 400
+
 @track_controller.route("/track/piper", methods=["GET"])
 def get_search_piper():
     query = request.args.get("query", default=None, type=str)
+    lang = request.args.get("lang", default="spanish", type=str)
     if query is None:
         return jsonify({
             "msg": "query"
-        })
+        }), 400
     
+    if lang not in LANGUAGE:
+        return jsonify({
+            "msg": "invalid lenguage"
+        }), 400
+
     try:
-        pass
-    except:
-        pass
+        if piper.isLoaded == False:
+            reload_piper()
+            piper.isLoaded = True
+
+        results = []
+        q_vec = piper.compute_vector(query, lang)
+        for document_id, rank in piper.search(q_vec):
+            results.append({
+                "track_id": document_id,
+                "rank": rank
+            })
+        
+        return jsonify({
+            "anwser": results
+        }), 200
+    except Exception as e:
+        print(e)
+        return jsonify({
+            "msg": "bad request"
+        }), 400
