@@ -60,6 +60,34 @@ def get_file(_type, id):
            "msg": "bad request"
         }), 400
 
+@track_controller.route("/track/<id>", methods=["GET"])
+def get_track_by_id(id):
+    try:
+        track = Track.find_by_id(id)
+        if track is None:
+            return jsonify({
+                "msg": "track not exits"
+            }), 400
+        
+        return jsonify({
+                "id": track.id.__str__(),
+                "name": track.name,
+                "duration_in_seconds": track.duration_in_seconds,
+                "cover_file_id": track.cover_file_id.__str__(),
+                "file_id": track.file_id.__str__(),
+                "artists": [
+                    {
+                        "id": artist.id,
+                        "name": artist.name    
+                    } for artist in track.artists
+                ]
+            }), 201    
+    except Exception as e:
+        print(e)
+        return jsonify({
+            "msg": "bad request"
+        }), 400
+
 @track_controller.route("/track", methods=["GET"])
 def get_all_tracks():
     page = request.args.get("page", default=0, type=int)

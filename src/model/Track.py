@@ -121,23 +121,55 @@ class Track(AbstractModel):
         return []
 
     @classmethod
-    def find_by_id(_class, id):
+    def find_by_id(_class, track_id: str):
         cursor = Database.get_cursor()
-        query_define = f"""
-            SELECT * FROM tracks WHERE track_id = ?;
+        query_define = """
+            SELECT
+                track_id,
+                track_name,
+                track_duration_in_seconds,
+                track_file_id,
+                track_cover_file_id,
+                artist_id,
+                artist_name
+            FROM tracks
+            LEFT JOIN artists_tracks on tracks.track_id = artists_tracks.at_track_id
+            LEFT JOIN artists on artists.artist_id = artists_tracks.at_artist_id
+            WHERE track_id = ?;
         """
         try:
-            cursor.execute(query_define, (id,))
-            result = cursor.fetchone()
+            cursor.execute(query_define, (track_id,))
+            rows = cursor.fetchall()
 
-            if result is not None:
-                _id, _name, _duration_in_seconds, _file_id, _cover_file_id = result
-                _cls = _class(_name, _duration_in_seconds, _file_id, _cover_file_id, gen_id=False)
-                _cls.id = UUID(_id)
+            if not rows:
+                return None
 
-                return _cls
+            track = None
+
+            for id, name, duration, file_id, cover_id, artist_id, artist_name in rows:
+                if track is None:
+                    track = _class(
+                        name,
+                        duration,
+                        file_id,
+                        cover_id,
+                        gen_id=False
+                    )
+                    track.id = UUID(id)
+
+                if artist_name is None:
+                    continue
+
+                artist = Artist(artist_name, gen_id=False)
+                artist.id = artist_id
+                track.artists.append(artist)
+
+            return track
+
         except Exception as e:
-            print(f"Error finding track by id: {e}")
+            print(f"Error getting track by id: {e}")
+            return None
+
         finally:
             cursor.close()
 
